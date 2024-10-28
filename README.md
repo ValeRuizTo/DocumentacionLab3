@@ -42,9 +42,10 @@ Conecta múltiples sedes a través de enlaces de internet y asegura la comunicac
 
 Segmenta la red local de la sede de Bogotá en varias VLANs para separar a los usuarios según su función.
 * VLANs:
-  * aa: VLAN Guest (PC1 - PC3)
-  * bb: VLAN Internal (PC2 - PC4)
-  * cc: VLAN Server/Printer
+  * aa: VLAN Guest (PC1 - PC3) ---> Guest
+  * bb: VLAN Internal (PC2 - PC4) ----> Internal
+  * cc: VLAN Server/Printer----> servicio
+  * ee: VLAN nativa
 * Elementos:
   * Switches 2960 (SW1_Intranet, SW3_Intranet): Según la página oficial de Cisco los Switches Cisco Catalyst 2960-24TT forman parte de la serie Cisco Catalyst 2960. Esta serie es una familia de switches de capa 2 diseñados para implementaciones en redes de pequeñas y medianas empresas, además cuentan con "24 y 48 puertos de conectividad Gigabit Ethernet (GbE) de escritorio 10/100/1000 " [6].
   
@@ -57,9 +58,9 @@ Segmenta la red local de la sede de Bogotá en varias VLANs para separar a los u
 ### Zona Verde - Intranet Madrid (MAD)
 Implementa la red local de la sede Madrid con VLANs similares a las de Bogotá, pero para diferentes departamentos y funciones.
 * VLANs:
-  * ff: VLAN Guest (PC5 - PC8)
-  * gg: VLAN Internal
-  * hh: VLAN Server/Printer
+  * ff: GuestMad (PC5 - PC8)
+  * gg: InternalMad
+  * hh: serviciosMad
 * Elementos:
   * Switch 2960 y 3560 (multicapa para el enrutamiento local), "Los switches compactos Cisco Catalyst 3560-CX y 2960-CX Series ayudan a optimizar las implementaciones de red. Estos conmutadores administrados Gigabit Ethernet (GbE) y Multigigabit Ethernet (mGig) son ideales para conectividad de datos de alta velocidad" [7]. En esta topologia permite la conexión y el enrutamiento entre VLANs en la sede de Madrid.
   * Impresoras: Printer2 y Printer3
@@ -93,6 +94,43 @@ Los switches de acceso Cisco 2960 se configuraron para soportar VLANs y permitir
 * **Configuracion  Multilayer Switch (MLSW) 3650 :**
 El switch Multilayer 3650 en Madrid se configuró como dispositivo de capa 3 para gestionar el enrutamiento entre VLANs locales, lo que optimiza el tráfico dentro de la sede. Se habilitó Inter-VLAN routing en este dispositivo, y se configuraron las interfaces SVI para cada VLAN interna.
 
+* **Configuración de VLANs y Enlace Trunk (802.1Q)**
+Debido a la segmentación entre VLANs, es necesario configurar los trunks en los switches para permitir que las VLANs se comuniquen entre sí y con los routers.
+
+ * Switch SW1_Intranet (Bogotá)
+   
+                 ! Configuración de VLANs
+                 vlan aa
+                   name Guest
+                 vlan bb
+                   name Internal
+                 vlan cc
+                   name Servicio
+                 vlan ee
+                   name Native
+                 
+                 ! Configuración del Trunk en el puerto hacia el router
+                 interface g0/1
+                   switchport mode trunk
+                   switchport trunk native vlan ee
+                   switchport trunk allowed vlan aa,bb,cc
+
+ * Switch SW3_Intranet (Madrid)
+   
+                   ! Configuración de VLANs
+                   vlan ff
+                     name GuestMad
+                   vlan gg
+                     name InternalMad
+                   vlan hh
+                     name ServiciosMad
+                   
+                   ! Configuración del Trunk en el puerto hacia el router
+                   interface g0/1
+                     switchport mode trunk
+                     switchport trunk native vlan ee
+                     switchport trunk allowed vlan ff,gg,hh
+                   
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
   * ***Requerimientos de filtrado de tráfico:***
       * Intranet Bogotá (BOG):
@@ -104,7 +142,7 @@ El switch Multilayer 3650 en Madrid se configuró como dispositivo de capa 3 par
       * Zona DMZ:
         * El servidor web estará disponible en la DMZ y gestionado por un servidor DNS.
         * El nombre de dominio para la página web personalizada tendrá el formato (dvt.net)
-        
+         
   * ***Implementación de ACLs (Listas de Control de Acceso):***
   "Una ACL es una serie de comandos del IOS que controlan si un router reenvía o descarta paquetes según la información   que se encuentra en el encabezado del paquete. Las ACL son una de las características del software IOS de Cisco más utilizadas." [8]. Las ACLs se aplicarán en los routers de las sedes y la DMZ para garantizar que el tráfico se filtre de acuerdo con las reglas definidas.
     * Ubicación de las ACLs:
@@ -171,6 +209,7 @@ El switch Multilayer 3650 en Madrid se configuró como dispositivo de capa 3 par
 
                           interface g0/1
                             ip access-group 101 in
+
 
 
 
