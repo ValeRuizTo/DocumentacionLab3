@@ -59,8 +59,9 @@ Segmenta la red local de la sede de Bogotá en varias VLANs para separar a los u
 Implementa la red local de la sede Madrid con VLANs similares a las de Bogotá, pero para diferentes departamentos y funciones.
 * VLANs:
   * ff: GuestMad (PC5 - PC8)
-  * gg: InternalMad
+  * gg: InternalMad (PC6-PC7)
   * hh: serviciosMad
+  * jj: NativeMad
 * Elementos:
   * Switch 2960 y 3560 (multicapa para el enrutamiento local), "Los switches compactos Cisco Catalyst 3560-CX y 2960-CX Series ayudan a optimizar las implementaciones de red. Estos conmutadores administrados Gigabit Ethernet (GbE) y Multigigabit Ethernet (mGig) son ideales para conectividad de datos de alta velocidad" [7]. En esta topologia permite la conexión y el enrutamiento entre VLANs en la sede de Madrid.
   * Impresoras: Printer2 y Printer3
