@@ -98,6 +98,42 @@ Los switches de acceso Cisco 2960 se configuraron para soportar VLANs y permitir
 * **Configuracion  Multilayer Switch (MLSW) 3650 :**
 El switch Multilayer 3650 en Madrid se configuró como dispositivo de capa 3 para gestionar el enrutamiento entre VLANs locales, lo que optimiza el tráfico dentro de la sede. Se habilitó Inter-VLAN routing en este dispositivo, y se configuraron las interfaces SVI para cada VLAN interna.
 
+                  ! Configuración de VLANs
+                                    vlan 10
+                                      name GuestMad
+                                    vlan 20
+                                      name InternalMad
+                                    vlan 30
+                                      name ServiciosMad
+                                    vlan 99
+                                      name nativeMad
+                   
+                   ! Configuración del Trunk en el puerto hacia el router
+                   interface Ga (varia del switch)
+                     switchport mode trunk
+                     switchport trunk native vlan 99
+                     switchport trunk allowed vlan 10,20,30
+
+     
+                  ! Configuracion para la comunicación inter vlan
+                  interface Vlan10
+                   ipv6 address 2001:1200:B27:1::1/64
+                   ipv6 nd managed-config-flag
+   
+                  
+                  interface Vlan20
+                   ipv6 address 2001:1200:B27:2::1/64
+                   ipv6 nd managed-config-flag
+   
+                  
+                  interface Vlan30
+                   ipv6 address 2001:1200:B27:3::1/64
+                   ipv6 nd managed-config-flag
+                  
+                  interface Vlan99
+                   ipv6 address 2001:1200:B27:4::1/64
+                   ipv6 nd managed-config-flag
+
 * **Configuración de VLANs y Enlace Trunk (802.1Q)**
 Debido a la segmentación entre VLANs, es necesario configurar los trunks en los switches para permitir que las VLANs se comuniquen entre sí y con los routers.
 
@@ -144,43 +180,6 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
                      switchport trunk native vlan 99
                      switchport trunk allowed vlan 10,20,30
 
-   * En el MLS (Madrid)
-  
-                  ! Configuración de VLANs
-                   vlan 10
-                     name GuestMad
-                   vlan 20
-                     name InternalMad
-                   vlan 30
-                     name ServiciosMad
-                   vlan 99
-                     name nativeMad
-                   
-                   ! Configuración del Trunk en el puerto hacia el router
-                   interface Ga (varia del switch)
-                     switchport mode trunk
-                     switchport trunk native vlan 99
-                     switchport trunk allowed vlan 10,20,30
-
-     
-                  ! Configuracion para la comunicación inter vlan
-                  interface Vlan10
-                   ipv6 address 2001:1200:B27:1::1/64
-                   ipv6 nd managed-config-flag
-   
-                  
-                  interface Vlan20
-                   ipv6 address 2001:1200:B27:2::1/64
-                   ipv6 nd managed-config-flag
-   
-                  
-                  interface Vlan30
-                   ipv6 address 2001:1200:B27:3::1/64
-                   ipv6 nd managed-config-flag
-                  
-                  interface Vlan99
-                   ipv6 address 2001:1200:B27:4::1/64
-                   ipv6 nd managed-config-flag
 
                    
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
