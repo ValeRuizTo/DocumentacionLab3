@@ -45,10 +45,10 @@ Conecta múltiples sedes a través de enlaces de internet y asegura la comunicac
 
 Segmenta la red local de la sede de Bogotá en varias VLANs para separar a los usuarios según su función.
 * VLANs:
-  * aa: VLAN Guest (PC1 - PC3) ---> Guest
-  * bb: VLAN Internal (PC2 - PC4) ----> Internal
-  * cc: VLAN Server/Printer----> servicio
-  * ee: VLAN nativa
+  * 10: VLAN Guest (PC1 - PC3) ---> Guest
+  * 20: VLAN Internal (PC2 - PC4) ----> Internal
+  * 30: VLAN Server/Printer----> servicio
+  * 40: VLAN native ----> nativo
 * Elementos:
   * Switches 2960 (SW1_Intranet, SW3_Intranet): Según la página oficial de Cisco los Switches Cisco Catalyst 2960-24TT forman parte de la serie Cisco Catalyst 2960. Esta serie es una familia de switches de capa 2 diseñados para implementaciones en redes de pequeñas y medianas empresas, además cuentan con "24 y 48 puertos de conectividad Gigabit Ethernet (GbE) de escritorio 10/100/1000 " [6].
   
@@ -61,10 +61,10 @@ Segmenta la red local de la sede de Bogotá en varias VLANs para separar a los u
 ### Zona Verde - Intranet Madrid (MAD)
 Implementa la red local de la sede Madrid con VLANs similares a las de Bogotá, pero para diferentes departamentos y funciones.
 * VLANs:
-  * ff: GuestMad (PC5 - PC8)
-  * gg: InternalMad (PC6-PC7)
-  * hh: serviciosMad
-  * jj: NativeMad
+  * 10: VLAN Guest (PC5 - PC8) ---> GuestMad 
+  * 20: VLAN Internal (PC6-PC7) --->  InternalMad 
+  * 30: VLAN Server/Printer ---> serviciosMad
+  * 99: VLAN native ---> NativeMad
 * Elementos:
   * Switch 2960 y 3560 (multicapa para el enrutamiento local), "Los switches compactos Cisco Catalyst 3560-CX y 2960-CX Series ayudan a optimizar las implementaciones de red. Estos conmutadores administrados Gigabit Ethernet (GbE) y Multigigabit Ethernet (mGig) son ideales para conectividad de datos de alta velocidad" [7]. En esta topologia permite la conexión y el enrutamiento entre VLANs en la sede de Madrid.
   * Impresoras: Printer2 y Printer3
@@ -101,39 +101,87 @@ El switch Multilayer 3650 en Madrid se configuró como dispositivo de capa 3 par
 * **Configuración de VLANs y Enlace Trunk (802.1Q)**
 Debido a la segmentación entre VLANs, es necesario configurar los trunks en los switches para permitir que las VLANs se comuniquen entre sí y con los routers.
 
- * Switch SW1_Intranet (Bogotá)
+ * Configuración en los switches (Bogotá)
    
                  ! Configuración de VLANs
-                 vlan aa
+                 vlan 10
                    name Guest
-                 vlan bb
+                 vlan 20
                    name Internal
-                 vlan cc
+                 vlan 30
                    name Servicio
-                 vlan ee
+                 vlan 40
                    name Native
+
+                 ! Configuración de las interfaces a los end devices
+                               interface Fa (varia del switch)
+                                 switchport access vlan xx (Numero de la VLAN varia de acuerdo a cual end device va la interface y a que Vlan pertenece)
                  
                  ! Configuración del Trunk en el puerto hacia el router
-                 interface g0/1
+                 interface Fa (varia del switch)
                    switchport mode trunk
-                   switchport trunk native vlan ee
-                   switchport trunk allowed vlan aa,bb,cc
+                   switchport trunk native vlan 40
+                   switchport trunk allowed vlan 10,20,30
+   
 
- * Switch SW3_Intranet (Madrid)
+   
+
+ * En los dos switches (Madrid)
    
                    ! Configuración de VLANs
-                   vlan ff
+                   vlan 10
                      name GuestMad
-                   vlan gg
+                   vlan 20
                      name InternalMad
-                   vlan hh
+                   vlan 30
                      name ServiciosMad
+                   vlan 99
+                     name nativeMad
                    
                    ! Configuración del Trunk en el puerto hacia el router
-                   interface g0/1
+                   interface fa (varia del switch)
                      switchport mode trunk
-                     switchport trunk native vlan ee
-                     switchport trunk allowed vlan ff,gg,hh
+                     switchport trunk native vlan 99
+                     switchport trunk allowed vlan 10,20,30
+
+   * En el MLS (Madrid)
+  
+                  ! Configuración de VLANs
+                   vlan 10
+                     name GuestMad
+                   vlan 20
+                     name InternalMad
+                   vlan 30
+                     name ServiciosMad
+                   vlan 99
+                     name nativeMad
+                   
+                   ! Configuración del Trunk en el puerto hacia el router
+                   interface Ga (varia del switch)
+                     switchport mode trunk
+                     switchport trunk native vlan 99
+                     switchport trunk allowed vlan 10,20,30
+
+     
+                  ! Configuracion para la comunicación inter vlan
+                  interface Vlan10
+                   ipv6 address 2001:1200:B27:1::1/64
+                   ipv6 nd managed-config-flag
+   
+                  
+                  interface Vlan20
+                   ipv6 address 2001:1200:B27:2::1/64
+                   ipv6 nd managed-config-flag
+   
+                  
+                  interface Vlan30
+                   ipv6 address 2001:1200:B27:3::1/64
+                   ipv6 nd managed-config-flag
+                  
+                  interface Vlan99
+                   ipv6 address 2001:1200:B27:4::1/64
+                   ipv6 nd managed-config-flag
+
                    
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
   * ***Requerimientos de filtrado de tráfico:***
