@@ -2,6 +2,9 @@
 
 ## Miembros: Tomas Barrios Guevara, Valentina Ruiz Torres y Darek Aljuri Martínez
 
+## Realizado por darek valentina organizalo mañana lindo por favor y gracias :)
+
+
 
 ## 1. Introducción
 En este laboratorio, se busca reforzar los conocimientos fundamentales sobre redes mediante la implementación de una topología empresarial utilizando Cisco Packet Tracer. Se trabajará con tecnologías LAN y WAN, combinando IPv4 e IPv6 en un entorno dual stack para garantizar la compatibilidad y migración eficiente entre ambos protocolos. Además, se configurarán servicios esenciales como DHCP, DNS y VPN IPsec, asegurando una conexión segura entre las intranets de diferentes ubicaciones.
