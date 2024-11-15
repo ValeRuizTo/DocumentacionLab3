@@ -528,14 +528,16 @@ Esta configuración establece dos comunidades SNMP en el router para la administ
    
 **Comunicación entre PC4 y PC6**
 
-Algunos protocolos de la comunicación:
+  *Algunos protocolos de la comunicación:*
 
   ![.](imagenesWiki/lab3Protocolos1.png)
    
   ![.](imagenesWiki/lab3Protocolos2.png)
 
+  se pudo apreciar que se uso EIGRPv6 durante el enrutamiento en IPv6, pero cuando se entra a la red IPv4 se usa EIGRP.
 
-  Podemos ver el proceso de encapsulación que hace el tunel de IPv6 en IPv4
+
+  *Encapsulación que hace el tunel de IPv6 en IPv4*
 
   Información que le llega al ISP_BOG por parte del R1_bog y la que sale hacia ISP_FL, podemos apreciar como se hace la encapsulación de IPv6 hacia a IPv4
 
