@@ -362,8 +362,8 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
                    name Native
 
                  ! Configuración de las interfaces a los end devices
-                               interface Fa (varia del switch)
-                                 switchport access vlan xx (Numero de la VLAN varia de acuerdo a cual end device va la interface y a que Vlan pertenece)
+                  interface Fa (varia del switch)
+                  switchport access vlan xx (Numero de la VLAN varia de acuerdo a cual end device va la interface y a que Vlan pertenece)
                  
                  ! Configuración del Trunk en el puerto hacia el router
                  interface Fa (varia del switch)
@@ -392,7 +392,7 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
                      switchport trunk native vlan 99
                      switchport trunk allowed vlan 10,20,30
 
-* **Configuracin tuneles:**
+* **Configuración túneles:**
  El tunneling se usa para permitir la comunicación segura entre dos puntos de la red ( en la topología los routers ISP_BOG e ISP_ESP) que están en diferentes redes, en este caso intranets. El tunneling encapsula los paquetes de un protocolo en otro, permitiendo que la información viaje a través de una infraestructura compartida o insegura (como Internet) sin comprometer la privacidad ni la integridad de los datos. En la topología, el túnel entre ISP_BOG e ISP_ESP lo usamos para encapsular los mensajes con dirección IPv6 que vienen de cualquiera de las intranets en la zona de internet que es IPv4, permitiendo el paso de una dirección IPv6 en una red IPv4.
 
                     interface Tunnel0
@@ -437,7 +437,7 @@ VPN IPSec en los routers del tunneling: La VPN IPSec se utiliza para asegurar el
 Esta configuración establece una VPN IPSec entre dos routers mediante el protocolo ISAKMP, proporcionando seguridad y cifrado para el tráfico de red. Primero, en la política ISAKMP (número 10), se define la autenticación pre-compartida, usando el algoritmo de hash SHA para integridad y el cifrado AES de 256 bits para privacidad. El grupo 2 especifica el grupo Diffie-Hellman para el intercambio de claves, y la vida útil del SA es de 86400 segundos (24 horas). La clave pre-compartida toor se asocia con la dirección 193.0.7.14, que corresponde al router remoto.
 Luego, se crea un conjunto de transformaciones (transform-set) llamado TSET, que usa esp-aes para el cifrado y esp-sha-hmac para integridad. La lista de acceso 101 permite el tráfico entre la red 193.0.7.1 y la red 193.0.7.14, especificando qué tráfico será protegido por IPSec. Después, se configura un mapa de criptografía (crypto map) llamado CMAP que aplica IPSec-ISAKMP, establece el router remoto como 193.0.7.14, asocia el conjunto de transformaciones TSET y aplica la lista de acceso 101 para seleccionar el tráfico. Finalmente, este mapa de criptografía se aplica a la interfaz se0/2/1, que conecta con el router remoto, activando así la VPN en esa interfaz.
 
-* **Configuracin SNMP:**
+* **Configuración SNMP:**
 
 SNMP en los routers R1_BOG y R2_ESP: SNMP es un protocolo de administración de redes que permite monitorear y gestionar dispositivos de red. En este caso, se ha configurado en los routers R1_BOG y R2_ESP para supervisar el estado y el rendimiento de estos routers críticos. Esto es útil para detectar problemas o fallos y recopilar información sobre la red, lo que ayuda a los administradores a mantener la red operativa y a realizar ajustes si es necesario.
 
@@ -446,7 +446,61 @@ SNMP en los routers R1_BOG y R2_ESP: SNMP es un protocolo de administración de 
 
 Esta configuración establece dos comunidades SNMP en el router para la administración de la red. La línea snmp-server community BOGRO RO crea una comunidad llamada BOGRO con permisos de solo lectura (RO, "Read-Only"), lo que permite a los administradores de red monitorear el router sin realizar cambios en su configuración. La línea snmp-server community BOGRW RW define otra comunidad llamada BOGRW con permisos de lectura y escritura (RW, "Read-Write"), permitiendo tanto la monitorización como la capacidad de modificar configuraciones en el router.
 
-                   
+Para cumplir con el requerimiento de que solo las máquinas en la VLAN internal tengan acceso al servicio SNMP, se implementaron listas de acceso (ACLs) para restringir las solicitudes SNMP basadas en las direcciones IP de origen, asegurando que solo los equipos autorizados puedan comunicarse con los routers.
+
+***ACL para Bogotá (Router R1_BOG):***
+
+                   permit udp 2001:1200:A17:2::/64 any eq snmp
+                   deny udp 2001:1200:A17:1::/64 any eq snmp
+                   deny udp 2001:1200:A17:3::/64 any eq snmp
+                   deny udp 2001:1200:A17:4::/64 any eq snmp
+
+
+
+ Permit udp 2001:1200:A17:2::/64 any eq snmp: Permite el acceso SNMP solo a las direcciones de la subred 2001:1200:A17:2::/64, que corresponde a la VLAN internal en Bogotá.
+ 
+ deny udp 2001:1200:A17:1::/64 any eq snmp: Niega el acceso SNMP a cualquier dirección de la subred 2001:1200:A17:1::/64 (se niega el acceso a las otras VLANS)
+ 
+ deny udp 2001:1200:A17:3::/64 any eq snmp: Niega el acceso SNMP a cualquier dirección de la subred 2001:1200:A17:3::/64.
+ 
+ deny udp 2001:1200:A17:4::/64 any eq snmp: Niega el acceso SNMP a cualquier dirección de la subred 2001:1200:A17:4::/64.
+
+ ***ACL para Madrid (Router R2_ESP):***
+
+                permit udp 2001:1200:B27:2::/64 any eq snmp
+                deny udp 2001:1200:B27:1::/64 any eq snmp
+                deny udp 2001:1200:B27:3::/64 any eq snmp
+                deny udp 2001:1200:B27:4::/64 any eq snmp
+                permit ipv6 any any
+
+
+ permit udp 2001:1200:B27:2::/64 any eq snmp: Permite el acceso SNMP solo a las direcciones de la subred 2001:1200:B27:2::/64, que corresponde a la VLAN internal en Madrid.
+
+ deny udp 2001:1200:B27:1::/64 any eq snmp: Niega el acceso SNMP a cualquier dirección de la subred 2001:1200:B27:1::/64.
+
+ deny udp 2001:1200:B27:3::/64 any eq snmp: Niega el acceso SNMP a cualquier dirección de la subred 2001:1200:B27:3::/64.
+
+ deny udp 2001:1200:B27:4::/64 any eq snmp: Niega el acceso SNMP a cualquier dirección de la subred 2001:1200:B27:4::/64.
+
+ permit ipv6 any any: Permite todo el tráfico IPv6 restante (para asegurar que no haya bloqueos indeseados para otros servicios).
+
+***Explicación:***
+Las ACLs están diseñadas para garantizar que solo los equipos en la subred correspondiente a la VLAN internal puedan acceder a SNMP en los routers. Esto se logra al permitir explícitamente el tráfico UDP en el puerto de SNMP (puerto 161) desde las subredes específicas de cada VLAN internal, y denegar el acceso desde otras subredes. Así, los administradores pueden monitorear y administrar el rendimiento de los routers sin comprometer la seguridad de la red, limitando el acceso solo a los dispositivos autorizados.
+
+La ACL para Bogotá se asegura de que solo los dispositivos en la subred 2001:1200:A17:2::/64 puedan usar SNMP, mientras que las otras subredes están bloqueadas.
+De manera similar, la ACL para Madrid permite solo la subred 2001:1200:B27:2::/64 para acceder al SNMP, asegurando que otros dispositivos no puedan conectarse.
+
+  ![.](imagenesWiki/SNMPPC2.jpg)
+ Para probar el SNMP se debe accedre al MIB Browser de un PC y configurar los campos de la siguiente manera, en este caso en la red de bogota, cabe resaltar que al ser el PC2 que se encuentra en la VLAN de internal, se va a poder hacer el proceso de SNMP porque elñ puerto va a estar desbloqueado:
+
+Address: Usa la default gateway del router, en este caso, 2001:1200:A17:2::1.
+OID: Utiliza un OID de prueba, como .1.3.6.1.2.1.1.1.0 
+Operations: Selecciona Get.
+Community String: Usa BOGRO (si es solo lectura) o BOGRW (si es lectura/escritura).
+
+ ![.](imagenesWiki/SNMPPC1.jpg)
+En este caso al ser el PC 1 de la VLAN guest no se puede hacer el proceso de SNMP
+
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
   * ***Requerimientos de filtrado de tráfico:***
       * Intranet Bogotá (BOG):
@@ -555,7 +609,7 @@ Esta configuración establece dos comunidades SNMP en el router para la administ
 
 ## 5. Retos presentados durante el desarrollo de la práctica
 
-Presentamos distintos retos durante el desarrollo del laboratorio, en un inicio, se intentó configurar un servidor dedicado como servidor DHCP, pero Packet Tracer no admitía el comando ipv6 dhcp relay destination para redirigir el tráfico al servidor mediante la IP del servidor, similar al comando de helper que se tenia para asignar un servidor de DHCP en IPV4. Se intentaron alternativas con el comando ipv6 dhcp server aplicando el nombre del pool, pero la comunicación con el router no se estableció correctamente, ya que el router no reconocía de qué servidor tomar las direcciones IPFinalmente, se decidió utilizar el router de la intranet como el servidor DHCPv6, lo que permitió definir un pool para cada VLAN y configurar la flag de DHCP Stateful, asegurando así que los dispositivos obtuvieran toda la información de red necesaria. 
+Presentamos distintos retos durante el desarrollo del laboratorio, en un inicio, se intentó configurar un servidor dedicado como servidor DHCP, pero Packet Tracer no admitía el comando ipv6 dhcp relay destination para redirigir el tráfico al servidor mediante la IP del servidor, similar al comando de helper que se tenia para asignar un servidor de DHCP en IPV4. Se intentaron alternativas con el comando ipv6 dhcp server aplicando el nombre del pool, pero la comunicación con el router no se estableció correctamente, ya que el router no reconocía de qué servidor tomar las direcciones I PFinalmente, se decidió utilizar el router de la intranet como el servidor DHCPv6, lo que permitió definir un pool para cada VLAN y configurar la flag de DHCP Stateful, asegurando así que los dispositivos obtuvieran toda la información de red necesaria. 
 
 Sucedio algo similar dentro de la intranet de madrid, se intento configurar el MLS como servidor de DHCPv6 pero no conseguimos que este funcionara como unico servidor, debido a que no se estan enviando las IPs correctamente, por esto definimos a R2 como servidor de DHCPv6 para esta red, con sus respectivas pools y flags, pero como el trafico entraba mediante el MLS, este a veces sobreponia la bandera establecida por parte de router, debido a esto agregamos las interfaces de las VLANs en el MLS con su respectiva bandera para que asi no sobreescribiera la información que mandaba el router.
 
