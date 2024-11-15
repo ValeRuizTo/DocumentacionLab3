@@ -192,7 +192,7 @@ Se diseñó un esquema de direccionamiento basado en los requerimientos de las V
 
 ***DHCPV6 en Madrid***
 
-  En el Router de la Sede (Madrid): Se configura el servicio de DHCPv6 Stateful para cada VLAN. El router se encarga de asignar direcciones IPv6 a los dispositivos finales en cada VLAN y de distribuir la información de red necesaria. Esto incluye la configuración de los pools de direcciones para cada VLAN y la activación de la bandera de DHCP Stateful, de modo que los dispositivos sepan que deben obtener toda su configuración de red del router.
+  En el Router de la Sede (Madrid): Se configura el servicio de DHCPv6 Stateful para cada VLAN. El router se encarga de asignar direcciones IPv6 a los dispositivos finales en cada VLAN y de distribuir la información de red necesaria. Esto incluye la configuración de los pools de direcciones para cada VLAN y la activación de la bandera de DHCP Stateful, de modo que los dispositivos sepan que deben obtener toda su configuración de red del router. A esta configuración se le incluye lo configurado en el MLS para la comunicación inter vlan, configuración presentada mas adelante en la documentación
 
                      ipv6 dhcp pool VLAN10_guestMAD
                       address prefix 2001:1200:B27:1::/64 lifetime 172800 86400
