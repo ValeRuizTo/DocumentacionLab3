@@ -840,8 +840,52 @@ La velocidad del procesador supera los 3.5 GHz
    ![.](imagenesWiki/tabladireccionamiento.jpg)
 
 
+4) ***análisis y proceso de configuración de los servicios de red requeridos para el correcto funcionamiento.***
+
+- IPv4 e IPv6 Addressing Scheme:
+  - Definición de un esquema de direccionamiento eficiente en IPv4 e IPv6 para la topología propuesta, utilizando subredes según las necesidades de cada Intranet y DMZ.
+  - DHCPv4 y DHCPv6: configuración de un servidor DHCP en cada intranet para asignar direcciones IPv4 de manera dinámica a los dispositivos finales. DHCPv6 en estado completo (stateful) se emplea para asignar direcciones IPv6, asegurando asignaciones únicas y permitiendo el uso de direcciones temporales en el DMZ y otros segmentos.
+
+- VLANs (Virtual Local Area Network):
+  - Configuración de VLANs para la segmentación lógica de la red, separando diferentes tipos de tráfico y proporcionando seguridad.
+  - VLAN Guest para accesos externos y controlado en la Intranet Madrid, VLANs específicas para acceso de empleados y usuarios internos en Bogotá y Madrid, y VLAN exclusiva para el servidor en DMZ.
 
 
+- STP (Spanning Tree Protocol):
+  - Uso de STP para evitar bucles en la red de switches y selección de un Root Bridge, asegurando una comunicación sin bucles y manteniendo redundancia en la capa de enlace.
+
+- Inter-VLAN Routing y Enlace Trunking (IEEE 802.1Q):
+  - Configuración de enlaces "trunks" en el MLSW de la Intranet Madrid para permitir la comunicación entre VLANs y configurar enrutamiento a través del MLSW de capa 3.
+  - Configuración de OSPF o EIGRP para el enrutamiento entre subredes de las VLANs, garantizando comunicación interna.
+
+
+-DNS (Domain Name System):
+  - Configuración del servidor DNS para la traducción de nombres de dominio a direcciones IP, con un dominio personalizado gestionado en el servidor DNS. El dominio seguirá el formato iniciales_nombres_estudiantes.net.
+
+- HTTP/HTTPS:
+   -Configuración de un servidor web accesible en HTTPS (puerto 443) para todos los usuarios de la intranet. Configuración de políticas de acceso mediante ACLs para restringir el acceso HTTP (puerto 80) únicamente a usuarios invitados.
+  - Personalización de la página web con nombre de dominio específico y hosteada en el servidor web dentro del DMZ.
+
+
+- Access Control Lists (ACLs):
+   - Configuración de listas de control de acceso para permitir y restringir el acceso HTTP y HTTPS a los usuarios según el tipo de intranet (Bogotá o Madrid) y los permisos de usuario (empleados o invitados).
+   - ACLs configuradas en las interfaces de los routers para limitar el acceso y garantizar que los permisos de acceso sigan las políticas definidas.
+
+- Protocolo de Enrutamiento (EIGRP/OSPF):
+  - Configuración de EIGRP o OSPF en routers y switches de capa 3 para el enrutamiento dinámico entre las distintas subredes.
+  - Redistribución de rutas entre protocolos (OSPF para IPv4 y OSPFv3 para IPv6) si es necesario, para garantizar conectividad en toda la red.
+
+- Túneles VPN con IPsec:
+  - Configuración de túneles VPN IPsec para la conexión segura entre las Intranets Bogotá y Madrid, asegurando confidencialidad y autenticidad de los datos transmitidos.
+  - Implementación de servicios de migración IPv4 a IPv6 para asegurar el acceso al servidor web desde ambas Intranets a través de IPv4 e IPv6.
+
+- Simple Network Management Protocol (SNMP):
+  - Configuración de SNMP para permitir la gestión de red en cada intranet desde los PCs internos y denegar el acceso SNMP desde las VLANs externas o invitadas.
+
+- Tracker System (UDP Sockets con Python):
+  - Configuración de un sistema de monitoreo remoto utilizando sockets UDP en Python, para el seguimiento de datos de PC4 (Intranet Bogotá) enviados al servidor "Tracker Server" en el DMZ.
+La aplicación "Tracker App" genera y envía datos de temperatura y velocidad de reloj del procesador cada segundo. El servidor "Tracker Server" usa "Tracker Replay" para reenviar los datos al "Tracker Dashboard" en PC7 (Intranet Madrid).
+Implementación de sockets UDP con estructura fija de impresión para los mensajes, incluyendo el uso de DHCPv6 en modo stateful para asignación dinámica de direcciones IP.
 
 
 **Flujo de datos y comunicación entre PC4 y PC6**
@@ -870,6 +914,31 @@ La velocidad del procesador supera los 3.5 GHz
    ![.](imagenesWiki/EncapsulacionIPV6aIPV43.png)
 
 
+**El flujo bidireccional de datos en la solución de seguimiento remoto de pacientes sigue los siguientes pasos:**
+
+Tracker App (PC4 a Tracker Server): La aplicación en PC4 genera mediciones aleatorias de temperatura y velocidad del procesador, que se envían al servidor mediante un socket UDP cada segundo.
+
+Tracker Server (PC7): El servidor recibe las mediciones y las reenvía a PC7, ubicado en Madrid, usando la dirección IP dinámica del PC7 que se obtiene mediante un mensaje inicial enviado por Tracker Dashboard.
+
+Tracker Dashboard (PC7): La aplicación en PC7 recibe los datos, analiza las mediciones, y si superan los umbrales (temperatura > 40°C o velocidad > 3.5 GHz), genera alertas para el técnico. Además, se asegura de enviar un mensaje inicial al servidor para permitir la detección de su IP dinámica.
+
+Este flujo se realiza utilizando sockets UDP, permitiendo la comunicación en tiempo real entre las aplicaciones, y garantiza que los datos sean transmitidos, procesados y visualizados de manera eficiente en ambas direcciones.
+
+
+***Pasos:***
+Primero, el PC7 (con la aplicación Tracker Dashboard) se contacta con el Tracker Server enviando un mensaje inicial para notificar que está listo para recibir datos. Este mensaje permite al Tracker Server conocer la dirección IP dinámica de PC7.
+
+Una vez que el servidor ha recibido este mensaje y ha identificado la IP de PC7 la guarda en una variable
+
+   ![.](imagenesWiki/servidor.jpg)
+
+El pc4 genera de manera aleatoria las mediciones y empieza a enviarlas, por otro lado el servidor las recibe y las reenvia al PC7
+   ![.](imagenesWiki/pc.jpg)
+
+El pc7 hace una verificacion y envia un mensaje de advertencia
+   ![.](imagenesWiki/pc7.jpg)
+
+En resumen, el flujo de datos comienza con el contacto inicial de PC7 al servidor y luego sigue con el envío y reenvío de las mediciones entre las aplicaciones
 
 ## 5. Retos presentados durante el desarrollo de la práctica
 
