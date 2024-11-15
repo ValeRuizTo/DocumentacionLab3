@@ -284,6 +284,10 @@ ipv6 nd managed-config-flag: Esto indica que el router debe enviar la configurac
 * **Configuracion routers:**
 Se configuraron los routers Cisco 2811 para soportar el enrutamiento estático y dinámico mediante ***OSPF y EIGRP***, permitiendo la interconexión eficiente de las redes de las sedes y la DMZ. Además, se habilitaron direcciones IPv6 en cada router, tanto en las interfaces internas como en las WANs.
 
+EIGRP en los routers R1_BOG, ISP_BOG, ISP_NET, ISP_ESP y R2_ESP: EIGRP es un protocolo de enrutamiento interior que ofrece una convergencia rápida y eficiencia en el uso de ancho de banda. Se utiliza en la red para asegurar una comunicación eficiente entre los routers dentro de una misma área administrativa. Al implementarlo en los routers R1_BOG, ISP_BOG, ISP_NET, ISP_ESP y R2_ESP, se puede facilitar el enrutamiento entre los dispositivos sin la necesidad de configuraciones externas. Al igual, permite soporte para redes IPv6, haciendo efectivas las transiciones entre IPv4 e IPv6.
+
+OSPF v2.0 en los routers ISP_BOG, ISP_FL y ISP_ESP: es un protocolo de enrutamiento interior basado en el estado de enlace que permite enrutamiento jerárquico y escalable, ideal para redes grandes. Esto facilita el intercambio de rutas entre diferentes segmentos, especialmente en redes de gran escala. Su capacidad para calcular la mejor ruta basada en el costo (generalmente relacionado con el ancho de banda) optimiza el rendimiento y minimiza la latencia en las rutas críticas.
+
 * **Configuracion Switches 2960:**
 Los switches de acceso Cisco 2960 se configuraron para soportar VLANs y permitir la conectividad dentro de cada sede. Se definieron las VLANs para separar el tráfico según los roles (invitados, internos, servidores). Además, se habilitó trunking en los puertos hacia los routers para permitir la propagación de las VLANs hacia otras sedes.
 
@@ -373,14 +377,13 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
                      switchport trunk allowed vlan 10,20,30
 
 * **Configuracin tuneles:**
-   *  ¿Qué servicio(s) de migración se debe(n) implementar para permitir el acceso al 
-servidor Web instalado en el DMZ configurado completamente en IPv6? ¿Qué servicios se deben 
-configurar para tener una comunicación segura entre las Intranets?  
+ El tunneling se usa para permitir la comunicación segura entre dos puntos de la red ( en la topología los routers ISP_BOG e ISP_ESP) que están en diferentes redes, en este caso intranets. El tunneling encapsula los paquetes de un protocolo en otro, permitiendo que la información viaje a través de una infraestructura compartida o insegura (como Internet) sin comprometer la privacidad ni la integridad de los datos. En la topología, el túnel entre ISP_BOG e ISP_ESP lo usamos para encapsular los mensajes con dirección IPv6 que vienen de cualquiera de las intranets en la zona de internet que es IPv4, permitiendo el paso de una dirección IPv6 en una red IPv4.
+
+VPN IPSec en los routers del tunneling: La VPN IPSec se utiliza para asegurar el túnel proporcionando confidencialidad, integridad y autenticación de los datos que se envían. En esta configuración, la VPN IPSec protege los datos en tránsito, asegurando que solo los routers autorizados (en este caso ISP_BOG e ISP_ESP) puedan acceder a la información que viaja a través del túnel
 
 * **Configuracin SNMP:**
-Soporte de gestión de red en ambas Intranet utilizando el estándar SNMP. Únicamente los PCs de la red 
-interna deben gestionar sus respectivas Intranets (set y get) utilizando SNMP. 
-Nota. ¿Qué servicio debe configurar para denegar el uso de SNMP a las demás VLANs
+
+SNMP en los routers R1_BOG y R2_ESP: SNMP es un protocolo de administración de redes que permite monitorear y gestionar dispositivos de red. En este caso, se ha configurado en los routers R1_BOG y R2_ESP para supervisar el estado y el rendimiento de estos routers críticos. Esto es útil para detectar problemas o fallos y recopilar información sobre la red, lo que ayuda a los administradores a mantener la red operativa y a realizar ajustes si es necesario.
 
                    
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
