@@ -2,11 +2,9 @@
 
 ## Miembros: Tomas Barrios Guevara, Valentina Ruiz Torres y Darek Aljuri Martínez
 
-## Realizado por darek valentina organizalo mañana lindo por favor y gracias :)
 
-(Colocare mañana los comandos, hoy estoy muy cansado para hacerlo gracias por entender :))
 
-El cableado estructurado fue realizado en base a la plantilla de cableado que el docente nos sugirio guardar del segundo laboratorio, los dispositivos extras agregados en este laboratorio se agregaron en el ultimo rack y los que no podian ir en la rack como los printers y los servers en una mesa al lado del ultimo rack.
+
 
 Hicimos uso de DHCP stafeful debido a que lo consideramos la mejor opcion entre los metodos de asignación de ipv6. SLAAC solo no podia ser utilizado debido a que a los computadores no se les podia poner servidor DNS, requerido para el acceso a la aplicacion y a su respectiva pagina. Stateless DHCP era una buena opcion debido que aunque los dispositivos finales autogeneraran su direccion IPV6 con SLAAC, pero podian obtener información extra como la dirección del servidor DNS mediante un servidor de DHCP, aunque el servidor de DHCP no administraria las direcciones. Preferimos DHCP Stateful debido a que se tiene un mayor control frente la asignación de las direcciones IPS, asi como un servidor que centraliza todos los registros de los dispositivos conectados a la red.
 
@@ -23,7 +21,10 @@ Se establecerán políticas de acceso mediante listas de control de acceso (ACL)
 
 ## 2. Topología de red
 
-Esta topología segmenta una empresa multinacional en dos grandes sedes (Bogotá y Madrid) con redes LAN organizadas por VLANs y conectadas mediante una WAN que emplea protocolos dinámicos. La DMZ asegura el acceso seguro a servidores públicos, y la dualidad IPv4/IPv6 permite interoperabilidad y modernización.
+Esta topología segmenta una empresa multinacional en dos grandes sedes (Bogotá y Madrid), donde las redes LAN están organizadas por VLANs y conectadas mediante una WAN que emplea protocolos de enrutamiento dinámico. La DMZ asegura el acceso seguro a servidores públicos, y la dualidad IPv4/IPv6 permite interoperabilidad y modernización en la infraestructura.
+
+El cableado estructurado fue realizado en base a la plantilla de cableado que el docente sugirió guardar del segundo laboratorio. Los dispositivos adicionales agregados en este laboratorio se ubicaron en el último rack, y aquellos que no podían montarse en el rack, como las impresoras y los servidores, se colocaron en una mesa al lado del último rack.
+![.](imagenesWiki/cableado.jpg)
 ![.](imagenesWiki/topologia3.png)
 ### Zona Azul - DMZ (Zona Desmilitarizada):
 Aloja servicios públicos expuestos al internet. Esta zona permite el acceso desde el exterior sin comprometer las redes internas.
@@ -99,6 +100,39 @@ Se diseñó un esquema de direccionamiento basado en los requerimientos de las V
     | ![.](imagenesWiki/subneteoInternet1.png)| ![.](imagenesWiki/subneteoInternet2.png) |
     |:----------------------------------------------:|:---------------------------------------------------------:|
 
+  * *ipv6*
+
+  Se llevó a cabo un proceso de subneteo en dos ciudades: Bogotá y Madrid. Ambas ubicaciones contaban con una red inicial de prefijo /48 y el objetivo era dividirlas en subredes de prefijo /64 para poder implementar 4 VLANs en cada ciudad.
+
+     ***Proceso de Subneteo en Madrid***
+  
+     Red inicial: 2001:1200:B27::/48
+  
+     Objetivo: Subnetear a /64 para generar 4 VLANs.
+  
+     El prefijo /48 permite utilizar 16 bits adicionales para subredes, lo que proporciona hasta 65,536 posibles subredes /64. En este caso, se generaron las primeras 4 subredes, asignando cada una a una VLAN específica:
+
+             VLAN 1: 2001:1200:B27:0001::/64
+             VLAN 2: 2001:1200:B27:0002::/64
+             VLAN 3: 2001:1200:B27:0003::/64
+             VLAN 4: 2001:1200:B27:0004::/64
+
+    ***Proceso de Subneteo en Bogotá***
+    Red inicial: 2001:1200:A17::/48
+  
+    Objetivo: Dividir la red en subredes /64 para implementar 4 VLANs.
+  
+    Siguiendo el mismo método, el se crearon 4 subredes a partir del prefijo /48, asignando una a cada VLAN en Bogotá:
+  
+            VLAN 1: 2001:1200:A17:0001::/64
+            VLAN 2: 2001:1200:A17:0002::/64
+            VLAN 3: 2001:1200:A17:0003::/64
+            VLAN 4: 2001:1200:A17:0004::/64
+  
+   ***Resumen del Subneteo en Bogotá y Madrid***
+   En ambas redes, se empleó un esquema de subneteo consistente y eficiente, segmentando de /48 a /64 para las VLANs. Esto permitió una organización clara y estructura de direccionamiento sin conflictos, con cada VLAN en una subred /64 distinta en ambas ciudades.
+
+  
 * **Asignacion y Verificacion de IPV4-IPV6:**
   ¿Qué método(s) de asignación se debe(n) configurar? ¿En qué terminales se deben configurar los 
 servicios requeridos?
