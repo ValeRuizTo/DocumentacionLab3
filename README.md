@@ -480,6 +480,14 @@ El trabajo con lo sockets con las IPs dinamicas fue en trabajo complicado, debid
 
 ## 6. Conclusiones y recomendaciones
 
+La configuración de IPv6 en coexistencia con IPv4 mediante Dual Stack demostró ser una solución eficaz y funcional para redes empresariales en transición hacia IPv6. La correcta implementación del protocolo en las Intranets de Bogotá y Madrid, junto con la DMZ, permitió una comunicación fluida y estable en ambas versiones de IP, cumpliendo con los requerimientos del laboratorio y reforzando la compatibilidad a largo plazo.
+
+La dinámica de asignación de direcciones IP mediante DHCP Stateful para dispositivos en redes cambiantes representó un desafío clave, especialmente en el contexto de la aplicación de sockets para la comunicación entre equipos. Sin embargo, el laboratorio permitió experimentar con soluciones para asegurar la conectividad constante, aprendiendo a manejar la variabilidad de direcciones IP en redes empresariales y cómo los servidores pueden adaptarse a estos cambios.
+
+A partir de los errores y inconvenientes que nos encontramos en el laboratorio fue que pudimos explorar otras opciones de configuración y maneras para resolver los problemas que nos encontraramos, permitiendonos adquirir mas conocimiento y ademas afianzar mas la hablidad de resolución de problemas teniendo en cuenta las limitaciones con las que podemos contar, encontrando soluciones en el camino con las herramientas a nuestra disposición.
+
+El trabajo en equipo y sobretodo la comunicación son muy importantes para sacar adelante laboratorios tan robustos, Cada integrante asumió roles específicos para configurar y verificar la seguridad de la red, simulando un entorno real donde el trabajo en equipo es clave para cubrir todas las vulnerabilidades y asegurar la confidencialidad de la información. Cada miembro aportó sus habilidades, creando un ambiente de aprendizaje compartido en el que se valoraron diferentes enfoques y se desarrollaron soluciones integrales
+
 
 ## 7. Referencias 
 
