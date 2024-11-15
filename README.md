@@ -500,6 +500,7 @@ La ACL para Bogotá se asegura de que solo los dispositivos en la subred 2001:12
 De manera similar, la ACL para Madrid permite solo la subred 2001:1200:B27:2::/64 para acceder al SNMP, asegurando que otros dispositivos no puedan conectarse.
 
   ![.](imagenesWiki/SNMPPC2.jpg)
+  
  Para probar el SNMP se debe accedre al MIB Browser de un PC y configurar los campos de la siguiente manera, en este caso en la red de bogota, cabe resaltar que al ser el PC2 que se encuentra en la VLAN de internal, se va a poder hacer el proceso de SNMP porque elñ puerto va a estar desbloqueado:
 
 Address: Usa la default gateway del router, en este caso, 2001:1200:A17:2::1.
@@ -508,7 +509,10 @@ Operations: Selecciona Get.
 Community String: Usa BOGRO (si es solo lectura) o BOGRW (si es lectura/escritura).
 
  ![.](imagenesWiki/SNMPPC1.jpg)
+ 
 En este caso al ser el PC 1 de la VLAN guest no se puede hacer el proceso de SNMP
+
+Y para el caso de Madrid el community String cambia  es ESPRO para lectura
 
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
   * ***Requerimientos de filtrado de tráfico:***
@@ -536,60 +540,311 @@ En este caso al ser el PC 1 de la VLAN guest no se puede hacer el proceso de SNM
         * Permita HTTPS (puerto 443) exclusivamente para usuarios internos.
           
     * Configuración de las ACLs en los routers:
-      Ejemplo de configuración para Bogotá (BOG):
+       para Bogotá (BOG):
 
-                    access-list 100 permit tcp 172.23.17.0 0.0.0.255 any eq 443
-                    access-list 100 deny tcp 172.23.27.0 0.0.0.255 any eq 443
-                    access-list 100 permit tcp 172.23.27.0 0.0.0.255 any eq 80
-                    access-list 100 deny ip any any
+                  ipv6 access-list ACL_Bogota_Web
+                  permit tcp 2001:1200:A17:2::/64 any eq 443
+                  permit tcp 2001:1200:A17:3::/64 any eq 443
+                  permit tcp 2001:1200:A17:4::/64 any eq 443
+                  permit tcp 2001:1200:A17:1::/64 any eq www
+                  deny tcp 2001:1200:A17:2::/64 any eq www
+                  deny tcp 2001:1200:A17:3::/64 any eq www
+                  deny tcp 2001:1200:A17:4::/64 any eq www
+                  deny tcp 2001:1200:A17:1::/64 any eq 443
        
        Explicación línea por línea:
-         * *access-list 101 deny tcp 172.24.17.0 0.0.0.255 any eq 443*
+      
+         * *ipv6 access-list ACL_Bogota_Web*
            
-           ***Propósito:***
-           Bloquea todo el tráfico TCP proveniente de la subred 172.24.17.0/24 (usuarios invitados de Madrid) hacia cualquier destino en el puerto 443 (HTTPS).
-       
-           ***Función:***
-           Esta regla garantiza que los usuarios invitados de Madrid no puedan usar HTTPS para acceder al servidor web (política de seguridad). Solo podrán hacerlo mediante HTTP.
+            Define una lista de acceso IPv6 llamada ACL_Bogota_Web.
 
-
-        * *access-list 101 permit tcp 172.24.17.0 0.0.0.255 any eq 80*
+        * *permit tcp 2001:1200:A17:2::/64 any eq 443*
           
-          ***Propósito:***
-          Permite a los usuarios invitados de la subred 172.24.17.0/24 acceder al servidor web mediante el puerto 80 (HTTP).
-          ***Función:***
-          Esta regla habilita el acceso por HTTP para los invitados, cumpliendo la política que restringe su uso de HTTPS.
+          Permite el tráfico HTTPS (TCP puerto 443) desde cualquier dirección dentro de la subred 2001:1200:A17:2::/64 hacia cualquier destino. Esta instruccion se repite para la VLAN 3 y 4
 
-        * *access-list 101 permit tcp 172.24.7.0 0.0.0.255 any eq 443*
+        * *permit tcp 2001:1200:A17:1::/64 any eq www*
 
-          ***Propósito:***
-        Permite que los usuarios internos (subred 172.24.7.0/24) accedan al servidor web mediante HTTPS (puerto 443).
+         Permite el tráfico HTTP (TCP puerto 80, comúnmente representado como www) desde cualquier dirección en la subred 2001:1200:A17:1::/64 hacia cualquier destino.
 
-          ***Función:***
-          Esta regla garantiza que los empleados y administrativos de Madrid puedan acceder al servidor por una conexión segura usando HTTPS.
+       * *deny tcp 2001:1200:A17:2::/64 any eq www*
 
-       * *access-list 101 deny ip any any*
+           Niega el tráfico HTTP desde cualquier dirección en la subred 2001:1200:A17:2::/64 hacia cualquier destino, esto mismo sucede con la direccion de la VLAN 3 y 4
 
-            ***Propósito:***
-            Bloquea todo el tráfico IP que no haya sido permitido por las reglas anteriores.
 
-            ***Función:***
-            Esta línea actúa como una política de denegación implícita al final de la lista. Si un paquete no coincide con ninguna de las reglas anteriores, se deniega por defecto.
+       * *deny tcp 2001:1200:A17:1::/64 any eq 443*
 
+          Niega el tráfico HTTPS desde cualquier dirección en la subred 2001:1200:A17:1::/64 hacia cualquier destino.
 
     * Aplicación de las ACLs en las interfaces:
           
-          * Router Bogotá:
+          * por ejemplo:
 
-                          interface g0/1
-                            ip access-group 100 in
+                         interface FastEthernet0/0.10
+                          encapsulation dot1Q 10
+                          no ip address
+                          ipv6 traffic-filter ACL_Bogota_Web in
+                          ipv6 address 2001:1200:A17:1::1/64
 
-          * Router Madrid:
+     Se tiene que declarar la interfaz y luego se usa la linea *ipv6 traffic-filter ACL_Bogota_Web in* para decir que se va a estar implementando esa access list
 
-                          interface g0/1
-                            ip access-group 101 in
+**Software Tracker**
+
+La solución “Tracker” está diseñada para monitorear de manera remota los recursos de un PC en tiempo real, permitiendo a un técnico visualizar datos críticos como temperatura y velocidad del procesador, y actuar en caso de alertas. El flujo del sistema funciona de la siguiente manera:
+
+Captura de mediciones en la aplicación “Tracker App”
+
+El PC4, ubicado en la Intranet de Bogotá (BOG), ejecuta la aplicación “Tracker App”. Esta aplicación genera mediciones de temperatura y velocidad del procesador de manera aleatoria dentro de los rangos:
+Temperatura: 30°C - 50°C
+Velocidad del procesador: 3.5 GHz - 4.0 GHz
+Estas mediciones se envían al servidor “Tracker Server”, ubicado en la zona DMZ, cada segundo.
+Reenvío de mediciones desde el servidor
+
+El “Tracker Server” recibe las mediciones y las procesa mediante la aplicación “Tracker Replay”, que reenvía los datos al PC7, ubicado en la Intranet de Madrid (MAD).
+La aplicación en el PC7, llamada “Tracker Dashboard”, permite al técnico visualizar las mediciones y las alertas generadas si:
+La temperatura supera los 40°C
+La velocidad del procesador supera los 3.5 GHz
+
+  * ***Uso de sockets para la comunicación entre las aplicaciones***
+
+    Un socket es un punto final de comunicación entre dos aplicaciones, utilizado para intercambiar datos a través de una red. En este sistema, los sockets permiten que las aplicaciones “Tracker App”, “Tracker Replay” y “Tracker Dashboard” se comuniquen de manera eficiente, enviando y recibiendo    
+    mensajes en tiempo real.
+  
+   Tracker App a Tracker Server:
+   Utiliza un socket para transmitir las mediciones generadas en PC4 al servidor.
+   Tracker Server a Tracker Dashboard:
+   La aplicación “Tracker Replay” usa sockets para reenviar las mediciones al PC7 en Madrid
+
+  * ***Solución al uso de direcciones IP dinámicas (DHCP Stateful)***
+    
+   Dado que el sistema utiliza un servidor DHCP Stateful, las direcciones IP asignadas a los dispositivos, incluido el PC7, son dinámicas. Esto presenta un desafío, ya que el “Tracker Server” necesita conocer la dirección IP actual del PC7 para poder enviarle los datos correctamente.
+
+   Para resolver esto:
+
+  PC7 envía un mensaje inicial al Tracker Server:
+  Al iniciar, el PC7 envía un mensaje al “Tracker Server” mediante un socket, indicando su disponibilidad para recibir datos.
+  El servidor deduce la dirección IP:
+  El “Tracker Server” identifica la dirección IP del PC7 a partir del mensaje recibido.
+  Envío de datos basado en la IP descubierta:
+  Una vez conocida la IP del PC7, el “Tracker Server” utiliza esta dirección para reenviar las mediciones capturadas desde PC4 hacia el PC7, asegurando que la información llegue correctamente.
+  
+  * ***Tracker App***
+    
+     Esta sección del código implementa la "Tracker App" en el PC4, que se encarga de generar mediciones de temperatura y velocidad del procesador, enviarlas al Tracker Server, y recibir posibles respuestas
+
+              from udp import *
+              from time import *
+              import random
+              sleep(5)
+    
+   udp: Módulo para manejar comunicación UDP (protocolo de transporte usado por sockets).
+   time y random: Se usan para gestionar pausas y generar valores aleatorios.
+   sleep(5): Introduce una espera de 5 segundos antes de iniciar la aplicación, para que el PC7 pueda establecer la comunicacion con el servidor y dar a conocer su IP
+
+
+              def onUDPReceive(ip, port, data):
+              print("received from " + ip + ":" + str(port) + ":" + data)
+
+   Esta función es un callback que se ejecuta cada vez que el socket recibe datos.
+   Imprime en consola la dirección IP, el puerto, y los datos recibidos, permitiendo monitorear respuestas del servidor.
+ 
+             socket = UDPSocket()
+             socket.onReceive(onUDPReceive)
+             print(socket.begin(1235))  # Escuchar en el puerto 1235
+
+   Se crea un socket UDP y se configura para escuchar mensajes en el puerto 1235.
+   Se asocia el callback onUDPReceive para gestionar los datos recibidos.
+
+             while True:
+            clock_speed = round(random.uniform(3.5, 4.0), 2)
+            temperature = round(random.uniform(30, 50), 2)
+            message = str(temperature)+ "-" +str(clock_speed)
+            socket.send("2001:1200:C17:3::2", 1235, message)
+            print("Sent message:  " + message)
+            sleep(1)
+
+   Un bucle infinito genera mediciones de:
+   Temperatura: Un valor aleatorio entre 30°C y 50°C.
+   Velocidad del procesador: Un valor aleatorio entre 3.5 GHz y 4.0 GHz.
+   Estas mediciones se combinan en un mensaje de texto ("temperatura-velocidad") y se envían al servidor Tracker Server a la dirección IPv6 2001:1200:C17:3::2, puerto 1235.
+   Cada segundo (sleep(1)) se genera y envía un nuevo mensaje, simulando mediciones en tiempo real.
+
+
+  * ***Tracker SERVER***
+
+  Esta sección del código implementa el "Tracker Server", encargado de recibir las mediciones enviadas por la Tracker App de PC4 y reenviarlas a PC7 en Intranet MAD. Aquí se asegura que el servidor mantenga la IP de PC7 para establecer la comunicación.
+
+             from udp import *
+             from time import *
+             target_ip = None
+             
+  udp: Módulo para manejar la comunicación UDP, permitiendo el intercambio de mensajes. 
+  time: Se usa para agregar pausas y controlar el flujo de mensajes. 
+  target_ip: Variable para almacenar la IP de PC7 cuando se recibe el mensaje inicial de espera.
+
+                 def onUDPReceive(ip, port, data, socket):
+                 global target_ip
+     
+                 # Si no hemos recibido aún la IP de PC7, la guardamos cuando llegue el mensaje de "esperando"
+                 if target_ip is None and "Esperando datos del servidor..." in data:
+                     target_ip = ip
+                     #print("Se ha guardado la direccion de PC7: {}".format(target_ip))
+                 
+                 # Reenviar el mensaje a PC7 si la IP está guardada
+                 if target_ip:
+                     socket.send(target_ip, 1235, data)
+                     #print("Mensaje reenviado a {}:{} -> {}".format(target_ip, 1235, data))
+
+  onUDPReceive: Es un callback que se activa cada vez que el socket recibe datos.
+
+  Guardar la IP de PC7: Al recibir el mensaje inicial de "Esperando datos del servidor...", el servidor almacena la IP de PC7 en target_ip para usarla en comunicaciones futuras.
+
+  Reenviar mensaje: Si la IP de PC7 ya está guardada, el servidor reenvía los datos recibidos a PC7 en el puerto 1235, permitiendo que las mediciones generadas en PC4 sean visibles para el técnico en PC7.
+
+                    def main():
+                        socket = UDPSocket()
+                        socket.onReceive(lambda ip, port, data: onUDPReceive(ip, port, data, socket))  # Pasar socket a la función
+                        print(socket.begin(1235))  # Escuchar en el puerto 1235
+                        
+                        while True:
+                            sleep(1)  # El servidor sigue escuchando y reenviando mensajes
+
+   socket: Se crea un socket UDP y se configura para escuchar en el puerto 1235.
    
-**Comunicación entre PC4 y PC6**
+   Asociar callback: Asocia la función onUDPReceive para gestionar los datos entrantes, asegurando la recepción y reenvío de mensajes.
+   
+   Bucle infinito: El servidor sigue ejecutándose en un bucle infinito, con una pausa de 1 segundo, manteniéndose disponible para recibir y reenviar mensajes continuamente.
+
+  * ***Tracker Dashboard***
+
+    Esta sección del código implementa el "Tracker Dashboard" en PC7, encargado de recibir las mediciones reenviadas por el Tracker Server y generar alertas en caso de superar ciertos umbrales. Además, envía un mensaje inicial al servidor para establecer comunicación y permitir que el servidor detecte su dirección IP dinámica.
+ 
+                       from udp import *
+                       from time import *
+                       import time
+                       sleep(3)
+    
+   udp: Módulo para manejar comunicación UDP, permitiendo el envío y recepción de mensajes.
+  time y sleep(3): Pausa de 3 segundos antes de iniciar, asegurando que los componentes previos (como el Tracker Server) estén listos.
+   
+                       # Variable global para controlar si el mensaje inicial ha sido enviado
+                      initial_message_sent = False
+                      
+   initial_message_sent: Bandera para evitar enviar múltiples mensajes iniciales al servidor.
+   
+                   def onUDPReceive(ip, port, data):
+                     global initial_message_sent
+            
+                     # Procesar los datos de temperatura y velocidad del reloj
+                     try:
+                         temperature, clock_speed = map(float, data.split('-'))
+                         if temperature > 40:
+                             print("ALERTA: Temperatura superior a 40C")
+                         if clock_speed > 3.5:
+                             print("ALERTA: Velocidad del reloj superior a 3.5 GHz")
+                     except ValueError:
+                         print("")
+                     print("")
+                     
+                     # Cuando se recibe el primer dato, no enviar más el mensaje de "esperando"
+                     if not initial_message_sent:
+                         initial_message_sent = True
+   
+   onUDPReceive es un  Callback que se activa al recibir datos del servidor.
+   
+   Extrae y analiza las mediciones de temperatura y velocidad del procesador recibidas en formato temperatura-velocidad.
+   
+   Genera alertas si la temperatura supera 40°C o la velocidad del reloj supera 3.5 GHz.
+   
+   Marca initial_message_sent como True después de recibir el primer dato, desactivando el envío del mensaje de "esperando".
+   
+                  def send_initial_message(socket, server_ip):
+                      global initial_message_sent
+                      # Enviar un mensaje de "esperando" antes de recibir los primeros datos
+                      if not initial_message_sent:
+                          message = "Esperando datos del servidor..."
+                          socket.send(server_ip, 1235, message)
+  
+   Send_initial_message: Envía un mensaje inicial ("Esperando datos del servidor...") al Tracker Server para notificarle que está listo para recibir datos.
+   
+   Este mensaje permite al Tracker Server capturar la IP dinámica de PC7.
+   
+                         def main():
+                             socket = UDPSocket()
+                             socket.onReceive(onUDPReceive)
+                             print(socket.begin(1235))  # Escuchar en el puerto 1235
+                      
+                             server_ip = "2001:1200:C17:3::2"  # Dirección del Tracker Server
+                             send_initial_message(socket, server_ip)  # Enviar el mensaje de "esperando"
+                      
+                             while True:
+                                 sleep(1)  # El PC7 sigue escuchando
+   
+   main: Crea un socket UDP y lo configura para escuchar en el puerto 1235.
+   Asocia el callback onUDPReceive para procesar los datos recibidos.
+   Envía un mensaje inicial al Tracker Server usando send_initial_message.
+   Permanece en un bucle infinito para recibir y procesar mensajes en tiempo real.
+
+   ![.](imagenesWiki/funcionamiento.jpg)
+
+  En la imagen se puede ver el funcionamiento:
+
+   1. PC2: Genera y envía mensajes con datos de temperatura y velocidad del reloj.
+   2. Tracker Server: Recibe la IP de PC7 y reenvía los datos de PC2.
+   3. PC7: Recibe los datos y muestra alertas si la temperatura supera 40°C o la velocidad del reloj excede 3.5 GHz.
+
+## 4. Puntos solicitados en la sección de Resultados y Análisis
+
+1)  ***Diseño estructurado Bogota y españa***
+    - **¿Cuántas subredes necesitas?**
+      
+      -Necesitamos 4 subredes, una para cada VLAN (10, 20, 30 y 40).
+    
+    - **¿Qué dispositivos/interfaces son parte de una subred dada?**
+        - Cada subred incluirá los dispositivos asignados a las VLANs específicas:
+          - VLAN 10: Dispositivos de Guest
+          - VLAN 20: Dispositivos de Internal
+          - VLAN 30: Dispositivos de servicio
+          - VLAN 40: Dispositivos de nativa
+          
+    - **¿Cuántos dispositivos/hosts requiere la subred?**
+    Con un prefijo /64 en IPv6, puedes tener una gran cantidad de direcciones disponibles (2^64 direcciones). Esto es más que suficiente para cubrir la mayoría de las redes de área local (LAN). En general, este tamaño es adecuado para una subred típica sin preocuparte por limitaciones de direcciones. 
+          
+    - **¿Qué partes de tu red usan direcciones privadas y cuáles usan públicas?**
+      
+     Se usan direcciones IPV6 ycada una tiene su direccion LinkLocal  
+    
+  
+
+3) ***Diseño estructurado SERVIDORES***
+    - **¿Cuántas subredes necesitas?**
+      
+      Necesitamos 3 subredes.
+  
+      - **¿Cuántos dispositivos/hosts requiere la subred?**
+      cada servidor tendra una direccion, con un prefijo /64 en IPv6, puedes tener una gran cantidad de direcciones disponibles (2^64 direcciones). Esto es más que suficiente para cubrir la mayoría de las redes de área local (LAN). En general, este tamaño es adecuado para una subred típica sin preocuparte por limitaciones de direcciones.            
+    
+                    
+    - **¿Qué partes de tu red usan direcciones privadas y cuáles usan públicas?**
+      
+        - La red de servidores usa direcciones publicas y estaticas
+
+
+
+**Subneteo y su tabla**
+
+   ![.](imagenesWiki/subneteo.jpg)
+
+
+**Tabla de direccionamiento de red**
+
+   ![.](imagenesWiki/tabladireccionamiento.jpg)
+
+
+
+
+
+
+**Flujo de datos y comunicación entre PC4 y PC6**
 
   *Algunos protocolos de la comunicación:*
 
