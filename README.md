@@ -276,10 +276,11 @@ ipv6 nd managed-config-flag: Esto indica que el router debe enviar la configurac
     3. Proceso de DHCPv6 y la Bandera "M":
     4. 
         Fase de Solicitud: Cuando un dispositivo (cliente) se conecta a la red, envía una solicitud de DHCPv6, normalmente con un paquete Solicit.
-        Fase de Respuesta: El servidor responde con un paquete Advertise, que puede contener las banderas activadas: Si la bandera M está activada, el servidor DHCP está gestionando las direcciones IPv6. Si la bandera O está activada, el servidor está proporcionando configuraciones adicionales (como DNS).
+        Fase de Respuesta: El servidor responde con un paquete Advertise, que puede contener las banderas activadas: Si la bandera M está activada, el servidor DHCP está gestionando las direcciones IPv6.
+       
        Fase de Confirmación: El cliente responde con un paquete Request, aceptando la oferta, y el servidor envía finalmente un paquete Reply con las configuraciones y direcciones asignadas.
        
-    5. ¿Por qué se usa una bandera para "stateful" en DHCPv6? En un escenario stateful, el servidor DHCP no solo asigna direcciones IP, sino que también mantiene un registro de las direcciones asignadas a cada dispositivo. Esto contrasta con un modelo stateless, en el que el dispositivo se asigna una dirección automáticamente usando SLAAC y solo recurre al servidor DHCP para obtener configuraciones adicionales (como servidores DNS). La bandera "M" es crucial porque indica que el servidor DHCP está configurado para administrar las direcciones de red, lo que es típico en redes donde el control centralizado y la gestión de direcciones son importantes (por ejemplo, para evitar conflictos de direcciones o para garantizar que las direcciones sean únicas y se mantengan organizadas).
+    6. ¿Por qué se usa una bandera para "stateful" en DHCPv6? En un escenario stateful, el servidor DHCP no solo asigna direcciones IP, sino que también mantiene un registro de las direcciones asignadas a cada dispositivo. Esto contrasta con un modelo stateless, en el que el dispositivo se asigna una dirección automáticamente usando SLAAC y solo recurre al servidor DHCP para obtener configuraciones adicionales (como servidores DNS). La bandera "M" es crucial porque indica que el servidor DHCP está configurado para administrar las direcciones de red, lo que es típico en redes donde el control centralizado y la gestión de direcciones son importantes (por ejemplo, para evitar conflictos de direcciones o para garantizar que las direcciones sean únicas y se mantengan organizadas).
 
    Como se ven las IPs en diferentes dispositivos, perteneciente a VLANS distintas en la intranet de Mad.
 
