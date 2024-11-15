@@ -431,8 +431,18 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
 
 ## 5. Retos presentados durante el desarrollo de la práctica
 
-Presentamos distintos retos durante el desarrollo del laboratorio, en un inicio, se intentó configurar un servidor dedicado como servidor DHCP, pero Packet Tracer no admitía el comando ipv6 dhcp relay destination para redirigir el tráfico al servidor. Se intentaron alternativas con el comando ipv6 dhcp server aplicando el nombre del pool, pero la comunicación con el router no se estableció correctamente, ya que el router no reconocía de qué servidor tomar las direcciones IP.
-Finalmente, se decidió utilizar el router de la intranet como el servidor DHCPv6, lo que permitió definir un pool para cada VLAN y configurar la flag de DHCP Stateful, asegurando así que los dispositivos obtuvieran toda la información de red necesaria.
+Presentamos distintos retos durante el desarrollo del laboratorio, en un inicio, se intentó configurar un servidor dedicado como servidor DHCP, pero Packet Tracer no admitía el comando ipv6 dhcp relay destination para redirigir el tráfico al servidor mediante la IP del servidor, similar al comando de helper que se tenia para asignar un servidor de DHCP en IPV4. Se intentaron alternativas con el comando ipv6 dhcp server aplicando el nombre del pool, pero la comunicación con el router no se estableció correctamente, ya que el router no reconocía de qué servidor tomar las direcciones IPFinalmente, se decidió utilizar el router de la intranet como el servidor DHCPv6, lo que permitió definir un pool para cada VLAN y configurar la flag de DHCP Stateful, asegurando así que los dispositivos obtuvieran toda la información de red necesaria. 
+
+Sucedio algo similar dentro de la intranet de madrid, se intento configurar el MLS como servidor de DHCPv6 pero no conseguimos que este funcionara como unico servidor, debido a que no se estan enviando las IPs correctamente, por esto definimos a R2 como servidor de DHCPv6 para esta red, con sus respectivas pools y flags, pero como el trafico entraba mediante el MLS, este a veces sobreponia la bandera establecida por parte de router, debido a esto agregamos las interfaces de las VLANs en el MLS con su respectiva bandera para que asi no sobreescribiera la información que mandaba el router.
+
+Muchas veces cuando se estaba realizando la configuración de los routers y se modificaba algo respecto a las VLANs, la configuración que teniamos previamente se borraba y tocaba volverla a poner.
+
+A frontar un problema tan amplio, al principio se veia como mucha información y muchos requerimientos, pero al momento de hacer una mejor división del enunciado logramos hacer el problema mas digerible.
+
+El hecho de tener que trabajar en archivos locales y sin tener una posibilidad de trabajo conjunto en linea o contemporaneo. El trabajo se hizo mas arduo debido a que todas las modificaciones realizdas se tenian que hacer en el mismo archivo para no tener que re hacer configuraciones, debido a esto establecimos una muy buena comunicación respecto a los pasos a seguir en las configuraciones, asegurandonos de estar trabajando en el archivo mas reciente y reenviando el archivo por el grupo cuando se hiciera una modificación y avisando a los compañeros cuando se iba a hacer una modificación.
+
+El trabajo con lo sockets con las IPs dinamicas fue en trabajo complicado, debido a que no queriamos trabajar con IPs estaticas por temas de escalibidad y de ser fiel a como funcionan los servicios en la vida real, solucionando mandando la dirección IP al servidor antes de iniciar la comunicación para que este tuviera la dirección actualizada del end devices al se le iba a mandar la información.
+
 ## 6. Conclusiones y recomendaciones
 
 
