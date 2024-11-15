@@ -262,17 +262,13 @@ ipv6 nd managed-config-flag: Esto indica que el router debe enviar la configurac
 
     En particular, en el caso de una configuración stateful de DHCPv6 (donde el servidor asigna una dirección IP y también administra el estado de la configuración), hay una bandera importante:
 
-    1. Flag "O" (Other Config Flag) Descripción: Esta bandera indica si el cliente necesita una configuración adicional, aparte de la dirección IP. Esto se refiere a opciones como servidores DNS, dominios de búsqueda, etc.
-
-       ¿Qué significa?: Cuando el cliente necesita recibir estas configuraciones de otros servicios, el servidor responde enviando estas opciones. La bandera "O" se activa para que el cliente sepa que debe esperar una configuración adicional.
-
-    2. Flag "M" (Managed Address Configuration Flag) Descripción: Esta bandera indica si el servidor DHCPv6 debe proporcionar una dirección IP al cliente.
+    1. Flag "M" (Managed Address Configuration Flag) Descripción: Esta bandera indica si el servidor DHCPv6 debe proporcionar una dirección IP al cliente junto a la otra información que contenga el servidor DHCP, que en nuestro caso tambien fue el servidor DNS.
 
        ¿Qué significa?: Si el servidor DHCPv6 responde con esta bandera activada, significa que está proporcionando direcciones stateful al cliente (es decir, el servidor está gestionando la asignación de direcciones IPv6).
 
        En el caso de un entorno DHCPv6 stateful: El servidor proporciona direcciones IPv6 completas (con sus direcciones y configuraciones), y el cliente no necesita autoconfigurar sus direcciones. En un escenario stateless (sin estado), el servidor DHCPv6 solo proporciona configuraciones adicionales, pero el cliente obtiene su dirección a través de SLAAC (Stateless Address Autoconfiguration).
 
-    3. Proceso de DHCPv6 y las Bandera "M" y "O":
+    3. Proceso de DHCPv6 y la Bandera "M":
     4. 
         Fase de Solicitud: Cuando un dispositivo (cliente) se conecta a la red, envía una solicitud de DHCPv6, normalmente con un paquete Solicit.
         Fase de Respuesta: El servidor responde con un paquete Advertise, que puede contener las banderas activadas: Si la bandera M está activada, el servidor DHCP está gestionando las direcciones IPv6. Si la bandera O está activada, el servidor está proporcionando configuraciones adicionales (como DNS).
