@@ -2,18 +2,6 @@
 
 ## Miembros: Tomas Barrios Guevara, Valentina Ruiz Torres y Darek Aljuri Martínez
 
-
-
-
-
-Hicimos uso de DHCP stafeful debido a que lo consideramos la mejor opcion entre los metodos de asignación de ipv6. SLAAC solo no podia ser utilizado debido a que a los computadores no se les podia poner servidor DNS, requerido para el acceso a la aplicacion y a su respectiva pagina. Stateless DHCP era una buena opcion debido que aunque los dispositivos finales autogeneraran su direccion IPV6 con SLAAC, pero podian obtener información extra como la dirección del servidor DNS mediante un servidor de DHCP, aunque el servidor de DHCP no administraria las direcciones. Preferimos DHCP Stateful debido a que se tiene un mayor control frente la asignación de las direcciones IPS, asi como un servidor que centraliza todos los registros de los dispositivos conectados a la red.
-
-Manejamos el servidor DHCP stateful en la intranet de bog dentro del router. Durante el desarrollo del laboratorio intentamos que el end device que es un servidor con el proposito de ser usado como servidor de DCHP, fuera utilizado con este proposito, pero tras muchos intentos no se logro la comunicación entre el router y el servidor, debido a que el comando que intentabamos utilizar que era "ipv6 dhcp relay destination <Dirección del servidor dhcp>" no lo soportaba packet tracer, se intento usar el comando de "ipv6 dhcp server <Nombre del pool de dhcp>" poniendo el nombre que se le habia asignado al pool para esa VLAN dentro del servidor de DHCP pero no lograbamos la comunicación debido a que en ningun momento se le pudo decir al router cual era la dirección del servidor del cual tenia que sacar las direcciones IPV6 para cada VLAN, que fue lo que buscabamos hacer con el comando que no soportaba packet tracer. Aun asi dejamos configuradas las pools dentro del servidor de DHCPv6, en el apartado de services. Luego notamos que la configuración si funcionaba pero el servidor solo proveia las direcciones con rango del cual se seleccionara el DHCPPool, teniendo el problema que solo se puede seleccionar una pool a la vez, generando un conflicto para que todas las VLANS tuviera su rango de direcciones correspondientes, podiamos tener las VLANS configuradas a la perfección pero si en el DHCPv6 teniamos la pool del VLAN10 seleccionaba, daba las direcciones unicamente de dicha pool. Por estas razones tomamos la decisión de dejar al router como el proovedor de direcciones de DHCP mediante DHCP stateful, ya que en el router tambien se trabaja la segmentación de las VLANS. Creamos las pools de DHCPv6 dentro del router para cada VLAN y le configuramos la flag de DHCP stateful para que los end devices que pertenecieran a esa VLAN supieran que iban a recibir toda su información de red por parte del router. Con esto logramos que todas las VLANS tuvieran la asignacion de direcciones IPV6 exitosas.
-
-Manejamos el servidor DHCP stateful en la intranet de mad dentro del router. Se siguio una configuración similar a la realizada en el router de bog, pero cambiando el prefijo de direcciónes de red al que le correspondia dentro de la red de mad. Consideramos una mejor opcion hacerlo en el router y no en el multilayer switch debido a que le estariamos poniendo mas labores al MLS dandole el trabajo de asignar las redes a las distintas vlans dentro de la red y consideramos mejor que el MLS se encargara unicamente de la comunicación inter vlan. Aunque dentro del MLS tuvimos que ponerle unas configuraciones extras mencionadas mas adelante para que pudiera hacer la comunicación inter vlan correctamente y que ademas de esto permitiera correctamente la asignacion de las direcciones ipv6.
-
-
-
 ## 1. Introducción
 En este laboratorio, se busca reforzar los conocimientos fundamentales sobre redes mediante la implementación de una topología empresarial utilizando Cisco Packet Tracer. Se trabajará con tecnologías LAN y WAN, combinando IPv4 e IPv6 en un entorno dual stack para garantizar la compatibilidad y migración eficiente entre ambos protocolos. Además, se configurarán servicios esenciales como DHCP, DNS y VPN IPsec, asegurando una conexión segura entre las intranets de diferentes ubicaciones.
 
@@ -26,6 +14,7 @@ Esta topología segmenta una empresa multinacional en dos grandes sedes (Bogotá
 El cableado estructurado fue realizado en base a la plantilla de cableado que el docente sugirió guardar del segundo laboratorio. Los dispositivos adicionales agregados en este laboratorio se ubicaron en el último rack, y aquellos que no podían montarse en el rack, como las impresoras y los servidores, se colocaron en una mesa al lado del último rack.
 ![.](imagenesWiki/cableado.jpg)
 ![.](imagenesWiki/topologia3.png)
+
 ### Zona Azul - DMZ (Zona Desmilitarizada):
 Aloja servicios públicos expuestos al internet. Esta zona permite el acceso desde el exterior sin comprometer las redes internas.
   * Elementos:
@@ -134,9 +123,75 @@ Se diseñó un esquema de direccionamiento basado en los requerimientos de las V
 
   
 * **Asignacion y Verificacion de IPV4-IPV6:**
-  ¿Qué método(s) de asignación se debe(n) configurar? ¿En qué terminales se deben configurar los 
-servicios requeridos?
+  
+   *¿Qué método de asignación se debe configurar?*
+  
+  El método de asignación configurado fue ***DHCPv6 Stateful*** en ambas sedes (Bogotá y Madrid). Esta elección se fundamentó en la necesidad de centralizar y controlar la asignación de direcciones IPv6, permitiendo a los dispositivos recibir tanto sus direcciones IP como la configuración de DNS, esencial para el acceso a la aplicación y a su respectiva página.
 
+   ***Métodos de asignación considerados:***
+
+   **SLAAC**: No era viable por sí solo, ya que, aunque permitía a los dispositivos autoconfigurarse, no podía asignar la dirección del servidor DNS necesaria para la comunicación con el sistema.
+
+   **Stateless DHCP:** Ofrecía la posibilidad de que los dispositivos generaran su dirección mediante SLAAC, pero recibieran información adicional (como la dirección del DNS) a través de un servidor DHCP. Sin embargo, no proporcionaba el control sobre la asignación de direcciones IP.
+
+   **DHCPv6 Stateful:** Elegido debido a su capacidad de asignar y controlar las direcciones IP desde un servidor central, lo que permitía registrar cada dispositivo conectado y ofrecer configuración completa de red.
+
+   - ***DHCPV6 en Bogota***
+  
+   En el Router de la Sede (Bogotá): Se configura el servicio de DHCPv6 Stateful para cada VLAN. El router se encarga de asignar direcciones IPv6 a los dispositivos finales en cada VLAN y de distribuir la información de red necesaria. Esto incluye la configuración de los pools de direcciones para cada VLAN y la activación de la bandera de DHCP Stateful, de modo que los dispositivos sepan que deben obtener toda su configuración de red del router.
+
+                      ipv6 dhcp pool VLAN10_Guest
+                      address prefix 2001:1200:A17:1::/64 lifetime 172800 86400
+                      dns-server 2001:1200:C17:4::2
+                      domain-name VLAN10_Guest
+                     !
+                     ipv6 dhcp pool VLAN20_Internal
+                      address prefix 2001:1200:A17:2::/64 lifetime 172800 86400
+                      dns-server 2001:1200:C17:4::2
+                      domain-name VLAN20_Internal
+                     !
+                     ipv6 dhcp pool VLAN30_Servicio
+                      address prefix 2001:1200:A17:3::/64 lifetime 172800 86400
+                      dns-server 2001:1200:C17:4::2
+                      domain-name VLAN30_Servicio
+                     !
+                     ipv6 dhcp pool VLAN40_Nativo
+                      address prefix 2001:1200:A17:4::/64 lifetime 172800 86400
+                     !
+   Y en las interfaces, las configuraciones de DHCPv6 son las siguientes:
+
+                      interface FastEthernet0/0.10
+                      encapsulation dot1Q 10
+                      ipv6 address 2001:1200:A17:1::1/64
+                      ipv6 nd managed-config-flag
+                      ipv6 dhcp server VLAN10_Guest
+                     !
+                     interface FastEthernet0/0.20
+                      encapsulation dot1Q 20
+                      ipv6 address 2001:1200:A17:2::1/64
+                      ipv6 nd managed-config-flag
+                      ipv6 dhcp server VLAN20_Internal
+                     !
+                     interface FastEthernet0/0.30
+                      encapsulation dot1Q 30
+                      ipv6 address 2001:1200:A17:3::1/64
+                      ipv6 nd managed-config-flag
+                      ipv6 dhcp server VLAN30_Servicio
+                     !
+                     interface FastEthernet0/0.99
+                      encapsulation dot1Q 99
+                      ipv6 address 2001:1200:A17:4::1/64
+                      ipv6 nd managed-config-flag
+                      ipv6 dhcp server VLAN40_Nativo
+
+   Esta configuración establece pools DHCPv6 para cada VLAN y asigna un prefijo de dirección IPv6, un tiempo de vida para las direcciones, un servidor DNS, y un nombre de dominio para cada VLAN. Las interfaces asociadas a cada VLAN tienen configurado el flag managed-config para habilitar la configuración automática administrada, y se especifica el pool DHCP correspondiente para cada interfaz.
+
+
+   ***En el Servidor DHCP (Bogotá):*** Este servidor también tiene configurados los pools de direcciones para cada VLAN (como VLAN10_Guest, VLAN20_Internal, VLAN30_Servicio, y VLAN40_Nativo). El servidor DHCP actúa como un respaldo y proporciona flexibilidad en la administración de la configuración para cada VLAN, en caso de que se requiera algún cambio específico en las configuraciones asignadas a las VLANs. Aunque intentaron utilizar el servidor como el principal proveedor de direcciones, finalmente se optó por la configuración en el router debido a limitaciones en Packet Tracer.
+ ![.](imagenesWiki/dhcp.jpg)
+
+
+  
 * **Configuracion routers:**
 Se configuraron los routers Cisco 2811 para soportar el enrutamiento estático y dinámico mediante ***OSPF y EIGRP***, permitiendo la interconexión eficiente de las redes de las sedes y la DMZ. Además, se habilitaron direcciones IPv6 en cada router, tanto en las interfaces internas como en las WANs.
 
@@ -311,7 +366,11 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
 
 
 
+## 5. Retos presentados durante el desarrollo de la práctica
 
+Presentamos distintos retos durante el desarrollo del laboratorio, en un inicio, se intentó configurar un servidor dedicado como servidor DHCP, pero Packet Tracer no admitía el comando ipv6 dhcp relay destination para redirigir el tráfico al servidor. Se intentaron alternativas con el comando ipv6 dhcp server aplicando el nombre del pool, pero la comunicación con el router no se estableció correctamente, ya que el router no reconocía de qué servidor tomar las direcciones IP.
+Finalmente, se decidió utilizar el router de la intranet como el servidor DHCPv6, lo que permitió definir un pool para cada VLAN y configurar la flag de DHCP Stateful, asegurando así que los dispositivos obtuvieran toda la información de red necesaria.
+## 6. Conclusiones y recomendaciones
 
 
 ## 7. Referencias 
