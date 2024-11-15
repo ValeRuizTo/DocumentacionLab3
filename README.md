@@ -186,6 +186,11 @@ Se diseñó un esquema de direccionamiento basado en los requerimientos de las V
 
    Esta configuración establece pools DHCPv6 para cada VLAN y asigna un prefijo de dirección IPv6, un tiempo de vida para las direcciones, un servidor DNS, y un nombre de dominio para cada VLAN. Las interfaces asociadas a cada VLAN tienen configurado el flag managed-config para habilitar la configuración automática administrada, y se especifica el pool DHCP correspondiente para cada interfaz.
 
+  Como se ven las IPs en diferentes dispositivos, perteneciente a VLANS distintas dentro de la intranet de Bog.
+
+ ![.](imagenesWiki/AsignacionIPBog.png)
+  
+
 
    ***En el Servidor DHCP (Bogotá):*** Este servidor también tiene configurados los pools de direcciones para cada VLAN (como VLAN10_Guest, VLAN20_Internal, VLAN30_Servicio, y VLAN40_Nativo). El servidor DHCP actúa como un respaldo y proporciona flexibilidad en la administración de la configuración para cada VLAN, en caso de que se requiera algún cambio específico en las configuraciones asignadas a las VLANs. Aunque intentaron utilizar el servidor como el principal proveedor de direcciones, finalmente se optó por la configuración en el router debido a limitaciones en Packet Tracer.
  ![.](imagenesWiki/dhcp.jpg)
@@ -275,6 +280,10 @@ ipv6 nd managed-config-flag: Esto indica que el router debe enviar la configurac
        Fase de Confirmación: El cliente responde con un paquete Request, aceptando la oferta, y el servidor envía finalmente un paquete Reply con las configuraciones y direcciones asignadas.
        
     5. ¿Por qué se usa una bandera para "stateful" en DHCPv6? En un escenario stateful, el servidor DHCP no solo asigna direcciones IP, sino que también mantiene un registro de las direcciones asignadas a cada dispositivo. Esto contrasta con un modelo stateless, en el que el dispositivo se asigna una dirección automáticamente usando SLAAC y solo recurre al servidor DHCP para obtener configuraciones adicionales (como servidores DNS). La bandera "M" es crucial porque indica que el servidor DHCP está configurado para administrar las direcciones de red, lo que es típico en redes donde el control centralizado y la gestión de direcciones son importantes (por ejemplo, para evitar conflictos de direcciones o para garantizar que las direcciones sean únicas y se mantengan organizadas).
+
+   Como se ven las IPs en diferentes dispositivos, perteneciente a VLANS distintas en la intranet de Mad.
+
+ ![.](imagenesWiki/AsignacionIPMad.png)
   
   
 * **Configuracion routers:**
