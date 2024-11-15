@@ -525,6 +525,29 @@ Esta configuración establece dos comunidades SNMP en el router para la administ
 
                           interface g0/1
                             ip access-group 101 in
+   
+**Comunicación entre PC4 y PC6**
+
+Algunos protocolos de la comunicación:
+
+  ![.](imagenesWiki/ab3Protocolos1.png)
+   
+  ![.](imagenesWiki/ab3Protocolos2.png)
+
+
+  Podemos ver el proceso de encapsulación que hace el tunel de IPv6 en IPv4
+
+  Información que le llega al ISP_BOG por parte del R1_bog y la que sale hacia ISP_FL, podemos apreciar como se hace la encapsulación de IPv6 hacia a IPv4
+
+  ![.](imagenesWiki/EncapsulacionIPV6aIPV4.png)
+
+  Información que le llega al ISP_FL por parte del ISP_bog y que sale hacia ISP_ESP, podemos apreciar como la encapsulación se mantiene dentro de la red IPv4
+
+  ![.](imagenesWiki/EncapsulacionIPV6aIPV42.png)
+
+  Información que le llega al ISP_ESP por parte de ISP_FL y que sale hacia R2_mad, podemos apreciar como se hace la desencapsulación de IPv4 nuevamente a IPv6
+
+   ![.](imagenesWiki/EncapsulacionIPV6aIPV43.png)
 
 
 
