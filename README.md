@@ -930,7 +930,7 @@ Primero, el PC7 (con la aplicación Tracker Dashboard) se contacta con el Tracke
 
 Una vez que el servidor ha recibido este mensaje y ha identificado la IP de PC7 la guarda en una variable
 
-   ![.](imagenesWiki/servidor.jpg)
+   ![.](imagenesWiki/servidr.jpg)
 
 El pc4 genera de manera aleatoria las mediciones y empieza a enviarlas, por otro lado el servidor las recibe y las reenvia al PC7
    ![.](imagenesWiki/pc.jpg)
@@ -939,6 +939,47 @@ El pc7 hace una verificacion y envia un mensaje de advertencia
    ![.](imagenesWiki/pc7.jpg)
 
 En resumen, el flujo de datos comienza con el contacto inicial de PC7 al servidor y luego sigue con el envío y reenvío de las mediciones entre las aplicaciones
+
+
+
+
+**Flujo bidireccional de mensajes SNMP entre los dispositivos gestionados en las diferentes Intranets**
+
+Utilizando las capacidades “get” y “set” sobre una variable MIB (Management Information Base), se realiza a través de los siguientes pasos:
+
+1. Capacidad "GET" (Obtención de Datos):
+El PC de la red interna (en cualquiera de las Intranets) actúa como el Gestor SNMP (SNMP Manager).
+El PC gestor envía un mensaje SNMP de tipo GET a un Dispositivo gestionado (por ejemplo, un switch, router o servidor), solicitando información sobre una variable MIB específica, como la utilización de CPU o temperatura.
+El Dispositivo gestionado, que tiene el Agente SNMP (SNMP Agent) configurado, responde con el valor actual de la variable MIB solicitada.
+Flujo:
+El PC gestor envía la solicitud GET con la variable MIB.
+El Agente SNMP en el dispositivo gestionado responde con el valor actual de la variable MIB.
+
+2. Capacidad "SET" (Establecer Datos):
+Similar al GET, pero en lugar de obtener información, el PC gestor envía un mensaje SNMP de tipo SET para modificar el valor de una variable MIB.
+El PC gestor envía el mensaje SET con el valor deseado para la variable MIB (por ejemplo, establecer un umbral de alerta de temperatura).
+El Agente SNMP en el dispositivo gestionado acepta el cambio y confirma la actualización.
+Flujo:
+El PC gestor envía la solicitud SET con la variable MIB y el valor a establecer.
+El Agente SNMP en el dispositivo gestionado actualiza la variable MIB y responde con una confirmación del cambio realizado.
+
+3. Restricción del uso de SNMP a las VLANs correspondientes:
+Para denegar el uso de SNMP a otras VLANs, se puede utilizar un servicio de listado de acceso (ACL) en los routers o switches, que controle el acceso a los puertos SNMP.
+
+![.](imagenesWiki/SNMPPC2.jpg)
+
+Imagen 1: Acceso a SNMP Permitido
+La primera imagen muestra una VLAN que puede acceder a SNMP. En este caso, se visualiza una PC  dentro de la VLAN internal ( VLAN 20) que está conectada a un router y switch. La PC de  tiene configurada la dirección IP correspondiente a su VLAN, y el acceso al puerto SNMP (puerto 161) en los dispositivos de red está permitido.
+
+Además, se observa que el default gateway de la PC de gestión está configurado correctamente para la misma red de la VLAN. El default gateway permite que la PC de gestión se comunique con dispositivos fuera de su red local. En esta imagen, se destaca que la comunicación entre el PC de gestión y el dispositivo gestionado se realiza correctamente utilizando SNMP para obtener o configurar valores en las variables MIB.
+ 
+  ![.](imagenesWiki/SNMPPC1.jpg)
+
+
+Imagen 2: Acceso a SNMP Denegado
+La segunda imagen muestra una VLAN que no puede acceder a SNMP. En este caso, se visualiza una PC en una VLAN distinta (por ejemplo, VLAN 10) intentando acceder al puerto SNMP (puerto 161) de un dispositivo gestionado. Sin embargo, el acceso está denegado debido a que una ACL (Access Control List) en el router bloquea el acceso desde esta VLAN hacia el dispositivo gestionado.
+
+Aunque la PC puede tener su default gateway configurado correctamente para la VLAN, al no estar autorizada por la ACL, no puede acceder al servicio SNMP. El dispositivo de red no responde a las solicitudes de SNMP desde esta PC. La imagen refleja que el default gateway sigue siendo importante, ya que, aunque la PC tiene la dirección IP de la red de su VLAN configurada y el gateway configurado para comunicarse con otros dispositivos fuera de su red local, la ACL bloquea específicamente el tráfico hacia los puertos SNMP.
 
 ## 5. Retos presentados durante el desarrollo de la práctica
 
@@ -954,7 +995,7 @@ El hecho de tener que trabajar en archivos locales y sin tener una posibilidad d
 
 El trabajo con lo sockets con las IPs dinamicas fue en trabajo complicado, debido a que no queriamos trabajar con IPs estaticas por temas de escalibidad y de ser fiel a como funcionan los servicios en la vida real, solucionando mandando la dirección IP al servidor antes de iniciar la comunicación para que este tuviera la dirección actualizada del end devices al se le iba a mandar la información.
 
-## 6. Conclusiones y recomendaciones
+## 6. Conclusiones 
 
 La configuración de IPv6 en coexistencia con IPv4 mediante Dual Stack demostró ser una solución eficaz y funcional para redes empresariales en transición hacia IPv6. La correcta implementación del protocolo en las Intranets de Bogotá y Madrid, junto con la DMZ, permitió una comunicación fluida y estable en ambas versiones de IP, cumpliendo con los requerimientos del laboratorio y reforzando la compatibilidad a largo plazo.
 
