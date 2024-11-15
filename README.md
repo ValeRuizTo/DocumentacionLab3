@@ -530,9 +530,9 @@ Esta configuración establece dos comunidades SNMP en el router para la administ
 
 Algunos protocolos de la comunicación:
 
-  ![.](imagenesWiki/ab3Protocolos1.png)
+  ![.](imagenesWiki/lab3Protocolos1.png)
    
-  ![.](imagenesWiki/ab3Protocolos2.png)
+  ![.](imagenesWiki/lab3Protocolos2.png)
 
 
   Podemos ver el proceso de encapsulación que hace el tunel de IPv6 en IPv4
