@@ -190,6 +190,69 @@ Se diseñó un esquema de direccionamiento basado en los requerimientos de las V
    ***En el Servidor DHCP (Bogotá):*** Este servidor también tiene configurados los pools de direcciones para cada VLAN (como VLAN10_Guest, VLAN20_Internal, VLAN30_Servicio, y VLAN40_Nativo). El servidor DHCP actúa como un respaldo y proporciona flexibilidad en la administración de la configuración para cada VLAN, en caso de que se requiera algún cambio específico en las configuraciones asignadas a las VLANs. Aunque intentaron utilizar el servidor como el principal proveedor de direcciones, finalmente se optó por la configuración en el router debido a limitaciones en Packet Tracer.
  ![.](imagenesWiki/dhcp.jpg)
 
+***DHCPV6 en Madrid***
+
+  En el Router de la Sede (Madrid): Se configura el servicio de DHCPv6 Stateful para cada VLAN. El router se encarga de asignar direcciones IPv6 a los dispositivos finales en cada VLAN y de distribuir la información de red necesaria. Esto incluye la configuración de los pools de direcciones para cada VLAN y la activación de la bandera de DHCP Stateful, de modo que los dispositivos sepan que deben obtener toda su configuración de red del router.
+
+                     ipv6 dhcp pool VLAN10_guestMAD
+                      address prefix 2001:1200:B27:1::/64 lifetime 172800 86400
+                      dns-server 2001:1200:C17:4::2
+                      domain-name guestMAD
+                     !
+                     ipv6 dhcp pool VLAN20_internalMAD
+                      address prefix 2001:1200:B27:2::/64 lifetime 172800 86400
+                      dns-server 2001:1200:C17:4::2
+                      domain-name internalMAD
+                     !
+                     ipv6 dhcp pool VLAN30_servicioMAD
+                      address prefix 2001:1200:B27:3::/64 lifetime 172800 86400
+                      dns-server 2001:1200:C17:4::2
+                      domain-name servicioMAD
+                     !
+                     ipv6 dhcp pool VLAN40_nativoMAD
+                      address prefix 2001:1200:B27:4::/64 lifetime 172800 86400
+                      omain-name nativoMAD
+                     !
+ Y en las interfaces, las configuraciones de DHCPv6 Son las siguientes:
+ 
+                    interface FastEthernet0/0.10
+                    encapsulation dot1Q 10
+                    no ip address
+                    ipv6 traffic-filter ACL_mad in
+                    ipv6 address 2001:1200:B27:1::1/64
+                    ipv6 nd managed-config-flag
+                    ipv6 eigrp 100
+                    ipv6 dhcp server VLAN10_guestMAD
+                   !
+                   interface FastEthernet0/0.20
+                    encapsulation dot1Q 20
+                    no ip address
+                    ipv6 traffic-filter ACL_mad in
+                    ipv6 address 2001:1200:B27:2::1/64
+                    ipv6 nd managed-config-flag
+                    ipv6 eigrp 100
+                    ipv6 dhcp server VLAN20_internalMAD
+                   !
+                   interface FastEthernet0/0.30
+                    encapsulation dot1Q 30
+                    no ip address
+                    ipv6 traffic-filter ACL_mad in
+                    ipv6 address 2001:1200:B27:3::1/64
+                    ipv6 nd managed-config-flag
+                    ipv6 eigrp 100
+                    ipv6 dhcp server VLAN30_servicioMAD
+                   !
+                   interface FastEthernet0/0.99
+                    encapsulation dot1Q 99
+                    no ip address
+                    ipv6 address 2001:1200:B27:4::1/64
+                    ipv6 nd managed-config-flag
+                    ipv6 eigrp 100
+                    ipv6 dhcp server VLAN99_nativoMAD
+                                      
+
+  
+
 
   
 * **Configuracion routers:**
