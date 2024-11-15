@@ -249,11 +249,37 @@ Se diseñó un esquema de direccionamiento basado en los requerimientos de las V
                     ipv6 nd managed-config-flag
                     ipv6 eigrp 100
                     ipv6 dhcp server VLAN99_nativoMAD
-                                      
 
+   ***Explicación:***
+   
+Pools DHCPv6: Cada pool define un rango de direcciones IPv6 con su respectivo lifetime (tiempo de vida) y configuración adicional, como los servidores DNS y el dominio.
+
+Interfaces: En cada interfaz de VLAN (por ejemplo, FastEthernet0/0.10 para VLAN 10), se habilita el servidor DHCPv6 para que asignen direcciones a los dispositivos conectados a esa VLAN. Se utiliza el comando ipv6 dhcp server <nombre_del_pool> para asociar el pool de direcciones con la interfaz correspondiente.
+
+ipv6 nd managed-config-flag: Esto indica que el router debe enviar la configuración DHCPv6 (dirección IPv6) junto con la respuesta de Neighbor Discovery (ND).
+     
+  - En el contexto de DHCPv6 (Protocolo de Configuración Dinámica de Host para IPv6), las "banderas" se refieren a ciertas opciones dentro de los mensajes de DHCPv6 que indican cómo se debe manejar la configuración de los dispositivos que solicitan una dirección IP. Estas banderas son parte de los mensajes que el cliente envía para especificar qué tipo de configuración espera recibir del servidor DHCP. Existen varias banderas clave que se pueden incluir en un mensaje de DHCPv6.
+
+    En particular, en el caso de una configuración stateful de DHCPv6 (donde el servidor asigna una dirección IP y también administra el estado de la configuración), hay una bandera importante:
+
+    1. Flag "O" (Other Config Flag) Descripción: Esta bandera indica si el cliente necesita una configuración adicional, aparte de la dirección IP. Esto se refiere a opciones como servidores DNS, dominios de búsqueda, etc.
+
+       ¿Qué significa?: Cuando el cliente necesita recibir estas configuraciones de otros servicios, el servidor responde enviando estas opciones. La bandera "O" se activa para que el cliente sepa que debe esperar una configuración adicional.
+
+    2. Flag "M" (Managed Address Configuration Flag) Descripción: Esta bandera indica si el servidor DHCPv6 debe proporcionar una dirección IP al cliente.
+
+       ¿Qué significa?: Si el servidor DHCPv6 responde con esta bandera activada, significa que está proporcionando direcciones stateful al cliente (es decir, el servidor está gestionando la asignación de direcciones IPv6).
+
+       En el caso de un entorno DHCPv6 stateful: El servidor proporciona direcciones IPv6 completas (con sus direcciones y configuraciones), y el cliente no necesita autoconfigurar sus direcciones. En un escenario stateless (sin estado), el servidor DHCPv6 solo proporciona configuraciones adicionales, pero el cliente obtiene su dirección a través de SLAAC (Stateless Address Autoconfiguration).
+
+    3. Proceso de DHCPv6 y las Bandera "M" y "O":
+    4. 
+        Fase de Solicitud: Cuando un dispositivo (cliente) se conecta a la red, envía una solicitud de DHCPv6, normalmente con un paquete Solicit.
+        Fase de Respuesta: El servidor responde con un paquete Advertise, que puede contener las banderas activadas: Si la bandera M está activada, el servidor DHCP está gestionando las direcciones IPv6. Si la bandera O está activada, el servidor está proporcionando configuraciones adicionales (como DNS).
+       Fase de Confirmación: El cliente responde con un paquete Request, aceptando la oferta, y el servidor envía finalmente un paquete Reply con las configuraciones y direcciones asignadas.
+       
+    5. ¿Por qué se usa una bandera para "stateful" en DHCPv6? En un escenario stateful, el servidor DHCP no solo asigna direcciones IP, sino que también mantiene un registro de las direcciones asignadas a cada dispositivo. Esto contrasta con un modelo stateless, en el que el dispositivo se asigna una dirección automáticamente usando SLAAC y solo recurre al servidor DHCP para obtener configuraciones adicionales (como servidores DNS). La bandera "M" es crucial porque indica que el servidor DHCP está configurado para administrar las direcciones de red, lo que es típico en redes donde el control centralizado y la gestión de direcciones son importantes (por ejemplo, para evitar conflictos de direcciones o para garantizar que las direcciones sean únicas y se mantengan organizadas).
   
-
-
   
 * **Configuracion routers:**
 Se configuraron los routers Cisco 2811 para soportar el enrutamiento estático y dinámico mediante ***OSPF y EIGRP***, permitiendo la interconexión eficiente de las redes de las sedes y la DMZ. Además, se habilitaron direcciones IPv6 en cada router, tanto en las interfaces internas como en las WANs.
@@ -346,6 +372,15 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
                      switchport trunk native vlan 99
                      switchport trunk allowed vlan 10,20,30
 
+* **Configuracin tuneles:**
+   *  ¿Qué servicio(s) de migración se debe(n) implementar para permitir el acceso al 
+servidor Web instalado en el DMZ configurado completamente en IPv6? ¿Qué servicios se deben 
+configurar para tener una comunicación segura entre las Intranets?  
+
+* **Configuracin SNMP:**
+Soporte de gestión de red en ambas Intranet utilizando el estándar SNMP. Únicamente los PCs de la red 
+interna deben gestionar sus respectivas Intranets (set y get) utilizando SNMP. 
+Nota. ¿Qué servicio debe configurar para denegar el uso de SNMP a las demás VLANs
 
                    
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
