@@ -561,7 +561,7 @@ Sucedio algo similar dentro de la intranet de madrid, se intento configurar el M
 
 Muchas veces cuando se estaba realizando la configuración de los routers y se modificaba algo respecto a las VLANs, la configuración que teniamos previamente se borraba y tocaba volverla a poner.
 
-A frontar un problema tan amplio, al principio se veia como mucha información y muchos requerimientos, pero al momento de hacer una mejor división del enunciado logramos hacer el problema mas digerible.
+Al frontar un problema tan amplio, al principio se veia como mucha información y muchos requerimientos, pero al momento de hacer una mejor división del enunciado logramos hacer el problema mas digerible.
 
 El hecho de tener que trabajar en archivos locales y sin tener una posibilidad de trabajo conjunto en linea o contemporaneo. El trabajo se hizo mas arduo debido a que todas las modificaciones realizdas se tenian que hacer en el mismo archivo para no tener que re hacer configuraciones, debido a esto establecimos una muy buena comunicación respecto a los pasos a seguir en las configuraciones, asegurandonos de estar trabajando en el archivo mas reciente y reenviando el archivo por el grupo cuando se hiciera una modificación y avisando a los compañeros cuando se iba a hacer una modificación.
 
