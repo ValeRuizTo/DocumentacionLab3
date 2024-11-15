@@ -94,6 +94,10 @@ La topología diseñada asegura una segmentación lógica eficiente mediante VLA
 
 * **Esquema de direccionamiento:**
 Se diseñó un esquema de direccionamiento basado en los requerimientos de las VLAN, asignando rangos de direcciones según la cantidad de dispositivos. Se realizó el Subneteo y se construyó una tabla de direccionamiento para toda la topología
+  * *ipv4*
+
+    | ![.](imagenesWiki/subneteoInternet1.png)| ![.](imagenesWiki/subneteoInternet2.png) |
+    |:----------------------------------------------:|:---------------------------------------------------------:|
 
 * **Asignacion y Verificacion de IPV4-IPV6:**
   ¿Qué método(s) de asignación se debe(n) configurar? ¿En qué terminales se deben configurar los 
