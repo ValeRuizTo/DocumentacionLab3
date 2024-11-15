@@ -888,7 +888,7 @@ La aplicación "Tracker App" genera y envía datos de temperatura y velocidad de
 Implementación de sockets UDP con estructura fija de impresión para los mensajes, incluyendo el uso de DHCPv6 en modo stateful para asignación dinámica de direcciones IP.
 
 
-**Flujo de datos y comunicación entre PC4 y PC6**
+**Flujo de datos y comunicación **
 
   *Algunos protocolos de la comunicación:*
 
