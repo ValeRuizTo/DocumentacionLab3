@@ -282,7 +282,27 @@ Se configuraron los routers Cisco 2811 para soportar el enrutamiento estático y
 
 EIGRP en los routers R1_BOG, ISP_BOG, ISP_NET, ISP_ESP y R2_ESP: EIGRP es un protocolo de enrutamiento interior que ofrece una convergencia rápida y eficiencia en el uso de ancho de banda. Se utiliza en la red para asegurar una comunicación eficiente entre los routers dentro de una misma área administrativa. Al implementarlo en los routers R1_BOG, ISP_BOG, ISP_NET, ISP_ESP y R2_ESP, se puede facilitar el enrutamiento entre los dispositivos sin la necesidad de configuraciones externas. Al igual, permite soporte para redes IPv6, haciendo efectivas las transiciones entre IPv4 e IPv6.
 
+                    Se haria esta configuración los routers requeridos
+
+                    EIGRP
+                    router eigrp 100
+                    network 193.0.7.0 0.0.0.3
+                    network 193.0.7.4 0.0.0.3
+                    network 193.0.7.16 0.0.0.3
+
+Esta configuración activa el proceso de EIGRP con el número de sistema autónomo 100, lo que permite el enrutamiento dinámico dentro de las redes especificadas. Las líneas network 193.0.7.0 0.0.0.3, network 193.0.7.4 0.0.0.3, y network 193.0.7.16 0.0.0.3 indican a EIGRP que incluya estas subredes en su proceso de enrutamiento. Esto significa que las interfaces del router en esas subredes participarán en EIGRP
+
 OSPF v2.0 en los routers ISP_BOG, ISP_FL y ISP_ESP: es un protocolo de enrutamiento interior basado en el estado de enlace que permite enrutamiento jerárquico y escalable, ideal para redes grandes. Esto facilita el intercambio de rutas entre diferentes segmentos, especialmente en redes de gran escala. Su capacidad para calcular la mejor ruta basada en el costo (generalmente relacionado con el ancho de banda) optimiza el rendimiento y minimiza la latencia en las rutas críticas.
+
+                    Se haria la siguiente configuracion para los routers requeridos
+
+                    router ospf 1
+                    log-adjacency-changes
+                    redistribute eigrp 100 subnets 
+                    network 193.0.7.8 0.0.0.3 area 0
+                    network 193.0.7.12 0.0.0.3 area 0
+
+Esta configuración en el router activa el proceso de OSPF, permitiendo el enrutamiento dinámico en la red. La opción log-adjacency-changes habilita la generación de mensajes en el router cada vez que se establecen o pierden adyacencias OSPF con otros routers, facilitando el monitoreo de cambios en las conexiones. La línea redistribute eigrp 100 subnets permite que las rutas aprendidas por EIGRP en el sistema autónomo 100 sean compartidas dentro de OSPF, lo que permite la interoperabilidad y el intercambio de rutas entre ambos protocolos. Las líneas network 193.0.7.8 0.0.0.3 area 0 y network 193.0.7.12 0.0.0.3 area 0 especifican las subredes que OSPF debe anunciar en el área, lo que incluye esas interfaces en el proceso de OSPF y permite el intercambio de rutas en esas subredes dentro del área central de la red.
 
 * **Configuracion Switches 2960:**
 Los switches de acceso Cisco 2960 se configuraron para soportar VLANs y permitir la conectividad dentro de cada sede. Se definieron las VLANs para separar el tráfico según los roles (invitados, internos, servidores). Además, se habilitó trunking en los puertos hacia los routers para permitir la propagación de las VLANs hacia otras sedes.
@@ -375,11 +395,56 @@ Debido a la segmentación entre VLANs, es necesario configurar los trunks en los
 * **Configuracin tuneles:**
  El tunneling se usa para permitir la comunicación segura entre dos puntos de la red ( en la topología los routers ISP_BOG e ISP_ESP) que están en diferentes redes, en este caso intranets. El tunneling encapsula los paquetes de un protocolo en otro, permitiendo que la información viaje a través de una infraestructura compartida o insegura (como Internet) sin comprometer la privacidad ni la integridad de los datos. En la topología, el túnel entre ISP_BOG e ISP_ESP lo usamos para encapsular los mensajes con dirección IPv6 que vienen de cualquiera de las intranets en la zona de internet que es IPv4, permitiendo el paso de una dirección IPv6 en una red IPv4.
 
+                    interface Tunnel0
+                    no ip address
+                    mtu 1476
+                    ipv6 address 2001:1200:E17:1::2/64
+                    ipv6 eigrp 100
+                    ipv6 rip REDV6 enable 
+                    tunnel source Serial0/2/1
+                    tunnel destination 193.0.7.14
+                    tunnel mode ipv6ip
+  
+Esta configuración en la interfaz Tunnel0 crea un túnel IPv6 sobre IPv4, permitiendo que el tráfico IPv6 viaje a través de una infraestructura IPv4. La interfaz utiliza una dirección IPv6 2001:1200:E17:1::2/64 (en este caso) y está configurada para participar en el enrutamiento IPv6 mediante EIGRP y RIPng, lo que facilita el intercambio de rutas IPv6 con otros routers compatibles. La fuente del túnel es la interfaz Serial0/2/1, y el destino es la dirección IPv4 193.0.7.14, encapsulando los paquetes IPv6 en un encabezado IPv4 para que puedan atravesar la red IPv4 hasta el router remoto. El ajuste del MTU a 1476 bytes ayuda a evitar la fragmentación de los paquetes en este proceso de encapsulación.
+
 VPN IPSec en los routers del tunneling: La VPN IPSec se utiliza para asegurar el túnel proporcionando confidencialidad, integridad y autenticación de los datos que se envían. En esta configuración, la VPN IPSec protege los datos en tránsito, asegurando que solo los routers autorizados (en este caso ISP_BOG e ISP_ESP) puedan acceder a la información que viaja a través del túnel
+
+                   crypto isakmp policy 10
+                    authentication pre-share
+                    hash sha
+                    encryption aes 256
+                    group 2
+                    lifetime 86400
+                   exit
+                   
+                   crypto isakmp key toor address 193.0.7.14
+                   
+                   crypto ipsec transform-set TSET esp-aes esp-sha-hmac
+                   
+                   access-list 101 permit ip 193.0.7.1 0.0.0.3 193.0.7.14 0.0.0.3
+                   
+                   crypto map CMAP 10 ipsec-isakmp
+                    set peer 193.0.7.14
+                    match address 101
+                    set transform-set TSET
+                   exit
+                   
+                   interface se0/2/1
+                    crypto map CMAP
+                   
+                   do wr
+
+Esta configuración establece una VPN IPSec entre dos routers mediante el protocolo ISAKMP, proporcionando seguridad y cifrado para el tráfico de red. Primero, en la política ISAKMP (número 10), se define la autenticación pre-compartida, usando el algoritmo de hash SHA para integridad y el cifrado AES de 256 bits para privacidad. El grupo 2 especifica el grupo Diffie-Hellman para el intercambio de claves, y la vida útil del SA es de 86400 segundos (24 horas). La clave pre-compartida toor se asocia con la dirección 193.0.7.14, que corresponde al router remoto.
+Luego, se crea un conjunto de transformaciones (transform-set) llamado TSET, que usa esp-aes para el cifrado y esp-sha-hmac para integridad. La lista de acceso 101 permite el tráfico entre la red 193.0.7.1 y la red 193.0.7.14, especificando qué tráfico será protegido por IPSec. Después, se configura un mapa de criptografía (crypto map) llamado CMAP que aplica IPSec-ISAKMP, establece el router remoto como 193.0.7.14, asocia el conjunto de transformaciones TSET y aplica la lista de acceso 101 para seleccionar el tráfico. Finalmente, este mapa de criptografía se aplica a la interfaz se0/2/1, que conecta con el router remoto, activando así la VPN en esa interfaz.
 
 * **Configuracin SNMP:**
 
 SNMP en los routers R1_BOG y R2_ESP: SNMP es un protocolo de administración de redes que permite monitorear y gestionar dispositivos de red. En este caso, se ha configurado en los routers R1_BOG y R2_ESP para supervisar el estado y el rendimiento de estos routers críticos. Esto es útil para detectar problemas o fallos y recopilar información sobre la red, lo que ayuda a los administradores a mantener la red operativa y a realizar ajustes si es necesario.
+
+                    snmp-server community BOGRO RO
+                    snmp-server community BOGRW RW
+
+Esta configuración establece dos comunidades SNMP en el router para la administración de la red. La línea snmp-server community BOGRO RO crea una comunidad llamada BOGRO con permisos de solo lectura (RO, "Read-Only"), lo que permite a los administradores de red monitorear el router sin realizar cambios en su configuración. La línea snmp-server community BOGRW RW define otra comunidad llamada BOGRW con permisos de lectura y escritura (RW, "Read-Write"), permitiendo tanto la monitorización como la capacidad de modificar configuraciones en el router.
 
                    
 * **Filtros de paquetes y listas de control de acceso (ACLs):**
